@@ -17,7 +17,7 @@ $rotaBase = explode('/', $rotaAtiva)[0];
     <meta name="robots" content="noindex, nofollow">
     <title><?php echo SecurityHelper::e($titulo ?? 'WMS Agiliza'); ?> · WMS Agiliza</title>
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/bootstrap.min.css">
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/app.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/app.css?v=20260913">
 </head>
 <body>
 <div class="wms-layout">
@@ -111,6 +111,6 @@ $rotaBase = explode('/', $rotaAtiva)[0];
 </div>
 
 <script src="<?php echo BASE_URL; ?>/assets/js/bootstrap.bundle.min.js"></script>
-<script src="<?php echo BASE_URL; ?>/assets/js/app.js"></script>
+<script src="<?php echo BASE_URL; ?>/assets/js/app.js?v=20260913"></script>
 </body>
 </html>
