@@ -92,7 +92,7 @@
                                     </td>
                                     <td><?php echo SecurityHelper::e(explode(' ', $l['operador_nome'])[0]); ?></td>
                                     <td class="text-end">
-                                        <?php if (AuthHelper::perfil() === 'GESTOR'): ?>
+                                        <?php if (AuthHelper::ehGestor()): ?>
                                         <form method="post" action="<?php echo BASE_URL; ?>/auditoria/excluir/<?php echo (int) $l['id']; ?>"
                                               onsubmit="return confirm('Remover este registro da trilha?')">
                                             <?php echo CsrfHelper::campo(); ?>

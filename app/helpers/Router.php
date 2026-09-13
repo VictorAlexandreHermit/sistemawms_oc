@@ -15,7 +15,7 @@ final class Router
         // Rota raiz: encaminha conforme autenticação
         if ($rota === '') {
             if (AuthHelper::logado()) {
-                self::redirecionar(AuthHelper::usuario('perfil') === 'GESTOR' ? 'dashboard' : 'kanban');
+                self::redirecionar(AuthHelper::ehGestor() ? 'dashboard' : 'kanban');
             }
             self::redirecionar('login');
             return;

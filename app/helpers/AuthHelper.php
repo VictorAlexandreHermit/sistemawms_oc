@@ -56,12 +56,17 @@ final class AuthHelper
 
     public static function ehGestor(): bool
     {
-        return self::perfil() === 'GESTOR';
+        return in_array(self::perfil(), ['GESTOR', 'ADMINISTRADOR'], true);
     }
 
     public static function ehOperador(): bool
     {
         return self::perfil() === 'OPERADOR';
+    }
+
+    public static function ehAdministrador(): bool
+    {
+        return self::perfil() === 'ADMINISTRADOR';
     }
 
     /**
@@ -81,6 +86,12 @@ final class AuthHelper
     public static function requirePerfil(array|string $perfisPermitidos): void
     {
         self::requireLogin();
+
+        // Perfil mestre: ADMINISTRADOR acessa qualquer rota.
+        if (self::ehAdministrador()) {
+            return;
+        }
+
         $perfis = is_array($perfisPermitidos) ? array_map('strtoupper', $perfisPermitidos) : [strtoupper($perfisPermitidos)];
 
         if (!in_array(self::perfil(), $perfis, true)) {

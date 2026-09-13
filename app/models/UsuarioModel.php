@@ -64,4 +64,49 @@ final class UsuarioModel
         $reg = $stmt->fetch();
         return $reg !== false && (int) $reg['ativo'] === 1;
     }
+
+    public static function matriculaExiste(string $matricula, ?int $ignorarId = null): bool
+    {
+        $pdo = Database::conexao();
+        $sql = 'SELECT id FROM usuarios WHERE matricula = :matricula AND deleted_at IS NULL';
+        $params = [':matricula' => $matricula];
+        if ($ignorarId !== null) {
+            $sql .= ' AND id <> :id';
+            $params[':id'] = $ignorarId;
+        }
+        $sql .= ' LIMIT 1';
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetch() !== false;
+    }
+
+    public static function criar(array $dados): int
+    {
+        $pdo = Database::conexao();
+        $stmt = $pdo->prepare(
+            'INSERT INTO usuarios (matricula, senha_hash, nome_completo, perfil)
+             VALUES (:matricula, :senha_hash, :nome_completo, :perfil)'
+        );
+        $stmt->execute([
+            ':matricula'     => $dados['matricula'],
+            ':senha_hash'    => password_hash($dados['senha'], PASSWORD_BCRYPT),
+            ':nome_completo' => $dados['nome_completo'],
+            ':perfil'        => $dados['perfil'],
+        ]);
+        return (int) $pdo->lastInsertId();
+    }
+
+    public static function atualizarStatus(int $id, int $ativo): void
+    {
+        $pdo = Database::conexao();
+        $stmt = $pdo->prepare('UPDATE usuarios SET ativo = :ativo WHERE id = :id');
+        $stmt->execute([':ativo' => $ativo, ':id' => $id]);
+    }
+
+    public static function atualizarSenha(int $id, string $senha): void
+    {
+        $pdo = Database::conexao();
+        $stmt = $pdo->prepare('UPDATE usuarios SET senha_hash = :senha_hash WHERE id = :id');
+        $stmt->execute([':senha_hash' => password_hash($senha, PASSWORD_BCRYPT), ':id' => $id]);
+    }
 }

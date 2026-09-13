@@ -37,7 +37,7 @@
         </div>
 
         <p class="text-center mt-3 mb-0" style="color:#94A3B8;font-size:12px">
-            Contas padrão de demonstração: <strong>GESTOR01</strong> / <strong>OPERADOR01</strong>
+            Contas de demonstração: <strong>ADMINISTRADOR</strong> / <strong>GESTOR01</strong> / <strong>OPERADOR01</strong>
         </p>
     </div>
 </div>

@@ -6,7 +6,7 @@
  */
 $perfil = AuthHelper::perfil();
 $usuarioNome = AuthHelper::usuario('nome_completo') ?? '';
-$excecoesPendentes = $perfil === 'GESTOR' ? DivergenciaModel::contarPendentes() : 0;
+$excecoesPendentes = AuthHelper::ehGestor() ? DivergenciaModel::contarPendentes() : 0;
 $rotaBase = explode('/', $rotaAtiva)[0];
 ?>
 <!DOCTYPE html>
@@ -30,13 +30,13 @@ $rotaBase = explode('/', $rotaAtiva)[0];
 
         <div class="nav-section">Operação</div>
 
-        <?php if ($perfil === 'GESTOR'): ?>
+        <?php if (AuthHelper::ehGestor()): ?>
         <a class="nav-item <?php echo $rotaBase === 'dashboard' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/dashboard">Dashboard</a>
         <?php endif; ?>
 
         <a class="nav-item <?php echo $rotaBase === 'recebimento' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/recebimento">Recebimento</a>
 
-        <?php if ($perfil === 'GESTOR'): ?>
+        <?php if (AuthHelper::ehGestor()): ?>
         <a class="nav-item <?php echo $rotaBase === 'recebimento' && (stripos($rotaAtiva, 'excecoes') !== false) ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/recebimento/excecoes">
             Exceções de Recebimento
             <?php if ($excecoesPendentes > 0): ?>
@@ -56,14 +56,18 @@ $rotaBase = explode('/', $rotaAtiva)[0];
         <a class="nav-item <?php echo $rotaBase === 'produtos' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/produtos">Produtos</a>
         <a class="nav-item <?php echo $rotaBase === 'enderecos' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/enderecos">Endereços Físicos</a>
 
-        <?php if ($perfil === 'GESTOR'): ?>
+        <?php if (AuthHelper::ehGestor()): ?>
         <div class="nav-section">Gestão</div>
         <a class="nav-item <?php echo $rotaBase === 'configuracoes' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/configuracoes">SLAs do Kanban</a>
         <?php endif; ?>
 
+        <?php if (AuthHelper::ehAdministrador()): ?>
+        <a class="nav-item <?php echo $rotaBase === 'usuarios' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/usuarios">Usuários &amp; Contas</a>
+        <?php endif; ?>
+
         <div class="sidebar-footer">
             <div class="mb-2">
-                <span class="dot <?php echo $perfil === 'GESTOR' ? 'dot-warning' : 'dot-info'; ?>"></span>
+                <span class="dot <?php echo AuthHelper::ehGestor() ? 'dot-warning' : 'dot-info'; ?>"></span>
                 <?php echo SecurityHelper::e($usuarioNome); ?>
                 <span class="d-block text-capitalize" style="color:#64748B"><?php echo strtolower(SecurityHelper::e($perfil)); ?></span>
             </div>
