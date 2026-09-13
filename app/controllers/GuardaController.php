@@ -74,7 +74,7 @@ final class GuardaController
 
         $endereco = EnderecoModel::buscarPorCodigo($enderecoCodigo);
         if ($endereco === null) {
-            ViewHelper::setFlash('erro', 'Endereço físico inválido (padrão RUA-PREDIO-NIVEL).');
+            ViewHelper::setFlash('erro', 'Endereço físico inválido (padrão CORREDOR-GALPAO-PRATELEIRA).');
             Router::redirecionar('guarda/executar/' . $pedidoId);
         }
         if ((int) $endereco['quarantena'] === 1) {
@@ -124,7 +124,7 @@ final class GuardaController
                 WHERE e.deleted_at IS NULL AND e.quarantena = 0
                 GROUP BY e.id
                 HAVING usado < e.capacidade_maxima
-                ORDER BY e.rua, e.predio, e.nivel LIMIT 1';
+                ORDER BY e.corredor, e.galpao, e.prateleira LIMIT 1';
         $reg = $pdo->query($sql)->fetch();
         return $reg ?: [];
     }

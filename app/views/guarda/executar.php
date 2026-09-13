@@ -23,9 +23,9 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label" for="endereco">2. Bipe o endereço físico (RUA-PREDIO-NIVEL)</label>
+                    <label class="form-label" for="endereco">2. Bipe o endereço físico (CORREDOR-GALPAO-PRATELEIRA)</label>
                     <input class="form-control bipador" type="text" id="endereco" name="endereco"
-                           placeholder="Ex.: R01-P02-N03" autocomplete="off">
+                           placeholder="Ex.: C01-G01-P01" autocomplete="off">
                 </div>
 
                 <button type="submit" class="wms-btn-primary w-100">Confirmar Alocação Física</button>

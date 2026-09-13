@@ -81,7 +81,7 @@ final class AvariaModel
     {
         $pdo = Database::conexao();
         $sql = 'SELECT a.*, p.sku, p.descricao, p.codigo_barras,
-                       e.rua, e.predio, e.nivel, u.nome_completo AS operador_nome
+                       e.corredor, e.galpao, e.prateleira, u.nome_completo AS operador_nome
                 FROM avarias a
                 INNER JOIN produtos p ON p.id = a.produto_id
                 INNER JOIN enderecos e ON e.id = a.endereco_id

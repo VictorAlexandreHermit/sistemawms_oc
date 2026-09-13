@@ -18,7 +18,7 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Endereço físico de origem (RUA-PREDIO-NIVEL)</label>
+                    <label class="form-label">Endereço físico de origem (CORREDOR-GALPAO-PRATELEIRA)</label>
                     <input class="form-control bipador" type="text" name="endereco" required>
                 </div>
 

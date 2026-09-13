@@ -8,7 +8,7 @@
     <div class="wms-card p-5 text-center">
         <div style="color:#64748B">
             <h3 style="font-size:18px;font-weight:600;color:#0F172A">Nenhuma carga aguardando guarda</h3>
-            <p class="mb-0">As cargas conferidas aparecem aqui para o direcionamento físico (Rua-Prédio-Nível).</p>
+            <p class="mb-0">As cargas conferidas aparecem aqui para o direcionamento físico (Corredor-Galpão-Prateleira).</p>
         </div>
     </div>
 <?php else: ?>

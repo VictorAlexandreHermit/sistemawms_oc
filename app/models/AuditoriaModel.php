@@ -62,14 +62,14 @@ final class AuditoriaModel
     {
         $pdo = Database::conexao();
         $sql = 'SELECT l.*, p.sku, p.descricao, p.codigo_barras,
-                       e.rua, e.predio, e.nivel, u.nome_completo AS operador_nome
+                       e.corredor, e.galpao, e.prateleira, u.nome_completo AS operador_nome
                 FROM logs_auditoria_estoque l
                 INNER JOIN produtos p ON p.id = l.produto_id
                 INNER JOIN enderecos e ON e.id = l.endereco_id
                 INNER JOIN usuarios u ON u.id = l.operador_id
                 WHERE l.deleted_at IS NULL';
         if ($termo !== null && trim($termo) !== '') {
-            $sql .= ' AND (p.sku LIKE :t OR p.descricao LIKE :t OR CONCAT(e.rua,"-",e.predio,"-",e.nivel) LIKE :t)';
+            $sql .= ' AND (p.sku LIKE :t OR p.descricao LIKE :t OR CONCAT(e.corredor,"-",e.galpao,"-",e.prateleira) LIKE :t)';
         }
         $sql .= ' ORDER BY l.created_at DESC LIMIT 300';
         $stmt = $pdo->prepare($sql);

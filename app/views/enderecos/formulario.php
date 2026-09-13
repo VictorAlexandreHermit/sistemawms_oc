@@ -13,19 +13,19 @@ $e = $endereco; // null na criação
 
             <div class="row g-3">
                 <div class="col-md-4">
-                    <label class="form-label">Rua *</label>
-                    <input class="form-control" type="text" name="rua" value="<?php echo SecurityHelper::e($e['rua'] ?? ''); ?>" maxlength="5" required
-                           placeholder="R01">
+                    <label class="form-label">Corredor *</label>
+                    <input class="form-control" type="text" name="corredor" value="<?php echo SecurityHelper::e($e['corredor'] ?? ''); ?>" maxlength="5" required
+                           placeholder="C01">
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">Prédio *</label>
-                    <input class="form-control" type="text" name="predio" value="<?php echo SecurityHelper::e($e['predio'] ?? ''); ?>" maxlength="5" required
+                    <label class="form-label">Galpão *</label>
+                    <input class="form-control" type="text" name="galpao" value="<?php echo SecurityHelper::e($e['galpao'] ?? ''); ?>" maxlength="5" required
+                           placeholder="G01">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Prateleira *</label>
+                    <input class="form-control" type="text" name="prateleira" value="<?php echo SecurityHelper::e($e['prateleira'] ?? ''); ?>" maxlength="5" required
                            placeholder="P01">
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Nível *</label>
-                    <input class="form-control" type="text" name="nivel" value="<?php echo SecurityHelper::e($e['nivel'] ?? ''); ?>" maxlength="5" required
-                           placeholder="N01">
                 </div>
                 <div class="col-12">
                     <label class="form-label">Descrição</label>

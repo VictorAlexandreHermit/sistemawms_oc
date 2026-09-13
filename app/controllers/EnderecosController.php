@@ -29,7 +29,7 @@ final class EnderecosController
 
         ViewHelper::render('enderecos/index', [
             'titulo'    => 'Endereços do Galpão',
-            'subtitulo' => 'Estrutura Rua-Prédio-Nível · R01-P01-N01 … · capacidade configurável por posição.',
+            'subtitulo' => 'Estrutura Corredor-Galpão-Prateleira · C01-G01-P01 … · capacidade configurável por posição.',
             'enderecos' => $enderecos,
             'termo'     => $termo,
         ]);
@@ -65,28 +65,28 @@ final class EnderecosController
         AuthHelper::requireLogin();
         CsrfHelper::checarRequisicao();
 
-        $rua    = trim($_POST['rua'] ?? '');
-        $predio = trim($_POST['predio'] ?? '');
-        $nivel  = trim($_POST['nivel'] ?? '');
-        $cap    = (int) ($_POST['capacidade_maxima'] ?? 1000);
+        $corredor    = trim($_POST['corredor'] ?? '');
+        $galpao      = trim($_POST['galpao'] ?? '');
+        $prateleira  = trim($_POST['prateleira'] ?? '');
+        $cap         = (int) ($_POST['capacidade_maxima'] ?? 1000);
 
-        if ($rua === '' || $predio === '' || $nivel === '' || $cap <= 0) {
-            ViewHelper::setFlash('erro', 'Rua, prédio e nível são obrigatórios e a capacidade deve ser positiva.');
+        if ($corredor === '' || $galpao === '' || $prateleira === '' || $cap <= 0) {
+            ViewHelper::setFlash('erro', 'Corredor, galpão e prateleira são obrigatórios e a capacidade deve ser positiva.');
             Router::redirecionar($id ? 'enderecos/editar/' . $id : 'enderecos/novo');
         }
 
-        if (preg_match('/^[A-Za-z0-9]{1,5}$/', $rua) !== 1 ||
-            preg_match('/^[A-Za-z0-9]{1,5}$/', $predio) !== 1 ||
-            preg_match('/^[A-Za-z0-9]{1,5}$/', $nivel) !== 1) {
-            ViewHelper::setFlash('erro', 'Rua, prédio e nível aceitam até 5 caracteres alfanuméricos (padrão RUA-PREDIO-NIVEL).');
+        if (preg_match('/^[A-Za-z0-9]{1,5}$/', $corredor) !== 1 ||
+            preg_match('/^[A-Za-z0-9]{1,5}$/', $galpao) !== 1 ||
+            preg_match('/^[A-Za-z0-9]{1,5}$/', $prateleira) !== 1) {
+            ViewHelper::setFlash('erro', 'Corredor, galpão e prateleira aceitam até 5 caracteres alfanuméricos (padrão CORREDOR-GALPAO-PRATELEIRA).');
             Router::redirecionar($id ? 'enderecos/editar/' . $id : 'enderecos/novo');
         }
 
         EnderecoModel::salvar([
-            'rua'    => $rua,
-            'predio' => $predio,
-            'nivel'  => $nivel,
-            'descricao' => trim($_POST['descricao'] ?? ''),
+            'corredor'    => $corredor,
+            'galpao'      => $galpao,
+            'prateleira'  => $prateleira,
+            'descricao'   => trim($_POST['descricao'] ?? ''),
             'capacidade_maxima' => $cap,
         ], $id);
 

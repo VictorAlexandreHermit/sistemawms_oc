@@ -9,7 +9,7 @@
         <span>Posições do galpão</span>
         <div class="d-flex gap-2 align-items-center">
             <form method="get" action="<?php echo BASE_URL; ?>/enderecos" class="d-flex gap-2">
-                <input class="form-control form-control-sm" type="text" name="q" value="<?php echo SecurityHelper::e($termo); ?>" placeholder="Buscar RUA/PROD/NIVEL…">
+                <input class="form-control form-control-sm" type="text" name="q" value="<?php echo SecurityHelper::e($termo); ?>" placeholder="Buscar CORREDOR/GALPAO/PRATELEIRA…">
                 <button class="btn btn-outline-slate btn-sm">Filtrar</button>
             </form>
             <a class="btn btn-dark btn-sm text-decoration-none" href="<?php echo BASE_URL; ?>/enderecos/novo">+ Novo Endereço</a>

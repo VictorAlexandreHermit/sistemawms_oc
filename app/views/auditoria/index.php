@@ -18,7 +18,7 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Endereço (RUA-PREDIO-NIVEL)</label>
+                    <label class="form-label">Endereço (CORREDOR-GALPAO-PRATELEIRA)</label>
                     <input class="form-control" type="text" name="endereco" required>
                 </div>
 

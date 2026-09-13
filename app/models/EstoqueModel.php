@@ -117,7 +117,7 @@ final class EstoqueModel
     {
         $pdo = Database::conexao();
         $sql = 'SELECT es.*, p.sku, p.codigo_barras, p.descricao, p.unidade_medida, p.curva_abc,
-                       e.rua, e.predio, e.nivel
+                       e.corredor, e.galpao, e.prateleira
                 FROM estoque_saldos es
                 INNER JOIN produtos p ON p.id = es.produto_id AND p.deleted_at IS NULL
                 INNER JOIN enderecos e ON e.id = es.endereco_id
@@ -138,14 +138,14 @@ final class EstoqueModel
             return [];
         }
         $pdo = Database::conexao();
-        $sql = 'SELECT es.*, e.rua, e.predio, e.nivel,
-                       CONCAT(e.rua, "-", e.predio, "-", e.nivel) AS endereco_codigo,
+        $sql = 'SELECT es.*, e.corredor, e.galpao, e.prateleira,
+                       CONCAT(e.corredor, "-", e.galpao, "-", e.prateleira) AS endereco_codigo,
                        es.quantidade AS saldo
                 FROM estoque_saldos es
                 INNER JOIN enderecos e ON e.id = es.endereco_id AND e.deleted_at IS NULL
                 WHERE es.produto_id = :p AND es.quantidade > 0
                   AND es.status_saldo = "DISPONIVEL" AND e.quarantena = 0
-                ORDER BY e.rua, e.predio, e.nivel';
+                ORDER BY e.corredor, e.galpao, e.prateleira';
         $stmt = $pdo->prepare($sql);
         $stmt->execute([':p' => $produto['id']]);
         return $stmt->fetchAll();
