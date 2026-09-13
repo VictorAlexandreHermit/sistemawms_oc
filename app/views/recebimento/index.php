@@ -34,8 +34,9 @@
             <div class="wms-card-header">Entrada manual por código de barras</div>
             <div class="p-4">
                 <p class="text-secondary" style="color:#475569">
-                    Recebimento sem XML: digite ou bipe o (s) código (s) de barras e a quantidade.
-                    Códigos novos são cadastrados automaticamente no <strong>Catálogo de Produtos</strong>
+                    Recebimento sem XML: digite ou bipe o (s) código (s) de barras, a quantidade
+                    e a <strong>Curva ABC</strong> de prioridade (A = maior, C = menor). Códigos
+                    novos são cadastrados automaticamente no <strong>Catálogo de Produtos</strong>
                     com um <strong>SKU interno</strong> gerado pelo sistema. A carga é liberada direto
                     para a <strong>Guarda (Putaway)</strong>.
                 </p>
@@ -52,13 +53,20 @@
                     <div id="manual-linhas">
                         <div class="manual-linha border rounded p-2 mb-2">
                             <div class="row g-2">
-                                <div class="col-7">
+                                <div class="col-5">
                                     <input class="form-control" type="text" name="codigo_barras[]"
                                            placeholder="Código de barras" required autocomplete="off">
                                 </div>
-                                <div class="col-3">
+                                <div class="col-2">
                                     <input class="form-control" type="number" name="quantidade[]"
                                            value="1" min="1" required>
+                                </div>
+                                <div class="col-3">
+                                    <select class="form-select" name="curva_abc[]" required>
+                                        <option value="C" selected>Curva C</option>
+                                        <option value="B">Curva B</option>
+                                        <option value="A">Curva A</option>
+                                    </select>
                                 </div>
                                 <div class="col-2 d-flex align-items-center">
                                     <button type="button" class="btn btn-outline-slate btn-sm btn-remove-linha w-100">Remover</button>
@@ -91,6 +99,8 @@
                     <li>Produto novo: o sistema gera um <strong>SKU interno</strong> (ex.: <code>WM-000001</code>)
                         que vira o método de busca e endereçamento do item.</li>
                     <li>O código de barras do fornecedor fica salvo e reutilizado nas próximas entradas.</li>
+                    <li>A <strong>Curva ABC</strong> define a prioridade da movimentação no galpão:
+                        a carga assume a prioridade do item de maior classe (A).</li>
                 </ul>
             </div>
         </div>
@@ -160,6 +170,7 @@ document.addEventListener('DOMContentLoaded', function () {
             var linha = primeiraLinha();
             var clone = linha.cloneNode(true);
             clone.querySelectorAll('input').forEach(function (i) { i.value = i.name === 'quantidade[]' ? '1' : ''; });
+            clone.querySelectorAll('select').forEach(function (s) { s.value = 'C'; });
             lista.appendChild(clone);
             removerEvento();
         });

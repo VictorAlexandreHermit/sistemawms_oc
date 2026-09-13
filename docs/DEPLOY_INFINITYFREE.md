@@ -307,7 +307,9 @@ num host que ofereça o serviço), com um número do WhatsApp conectado.
    ```
 4. Suba esse `config/config.php` via FileZilla para `htdocs/config/`.
 5. Para o teste dirigido ao seu celular: em uma avaliação (Painel OTIF → **Ver**),
-   deixe o contato **21 98003-0872** e clique em **"Disparar avaliação novamente"**.
+   informe **no campo de contato** o número do WhatsApp para onde deseja enviar o
+   link de teste (o sistema não possui número padrão configurado) e clique em
+   **"Disparar avaliação novamente"**.
    O WhatsApp da instância enviará o link ao número informado.
 6. Enquanto `modo` estiver `simulacao`, **nenhuma mensagem é enviada de verdade**:
    o sistema apenas marca como "ENVIADO" e registra o link no log de segurança.

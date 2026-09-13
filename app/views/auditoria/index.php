@@ -17,32 +17,10 @@
                     <input class="form-control" type="text" name="produto" required>
                 </div>
 
-                <div class="mb-3" data-endereco-cascata
-                     data-enderecos="<?php echo SecurityHelper::e(json_encode($enderecosOpcoes, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)); ?>"
-                     data-sugestao-corredor="<?php echo SecurityHelper::e($enderecoSugerido['corredor'] ?? ''); ?>"
-                     data-sugestao-galpao="<?php echo SecurityHelper::e($enderecoSugerido['galpao'] ?? ''); ?>"
-                     data-sugestao-prateleira="<?php echo SecurityHelper::e($enderecoSugerido['prateleira'] ?? ''); ?>">
-                    <label class="form-label">Endereço (CORREDOR / GALPÃO / PRATELEIRA)</label>
-                    <div class="row g-2">
-                        <div class="col-4">
-                            <select class="form-select" name="corredor" data-campo="corredor" required></select>
-                        </div>
-                        <div class="col-4">
-                            <select class="form-select" name="galpao" data-campo="galpao" required></select>
-                        </div>
-                        <div class="col-4">
-                            <select class="form-select" name="prateleira" data-campo="prateleira" required></select>
-                        </div>
-                    </div>
-                    <?php if (!empty($enderecoSugerido['corredor'])): ?>
-                    <div class="form-text">
-                        Pré-selecionado em ordem crescente (posições cheias ficam em "(cheio)").
-                        <span class="badge badge-success-lg" style="margin-left:.25rem">Sugestão: <?php echo SecurityHelper::e($enderecoSugerido['corredor'] . '-' . $enderecoSugerido['galpao'] . '-' . $enderecoSugerido['prateleira']); ?></span>
-                    </div>
-                    <?php else: ?>
-                    <div class="form-text">Nenhum endereço físico com espaço livre no momento.</div>
-                    <?php endif; ?>
-                </div>
+                <?php
+                $campoEnderecoRotulo = 'Endereço (CORREDOR / GALPÃO / PRATELEIRA)';
+                include BASE_DIR . '/app/views/templates/campos_endereco_cascata.php';
+                ?>
 
                 <div class="mb-3">
                     <label class="form-label">Nova quantidade contada</label>

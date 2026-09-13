@@ -22,18 +22,20 @@
                            placeholder="Código de barras do produto" data-proximo="endereco" autofocus required>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label" for="endereco">2. Bipe o endereço físico (CORREDOR-GALPAO-PRATELEIRA)</label>
-                    <input class="form-control bipador" type="text" id="endereco" name="endereco"
-                           placeholder="Ex.: C01-G01-P01" autocomplete="off">
-                </div>
+                <?php
+                $campoEnderecoRotulo = '2. Corredor, galpão e prateleira de armazenamento';
+                $campoEnderecoId     = 'endereco';
+                $campoEnderecoDica   = 'Ao trocar corredor ou galpão, as prateleiras são atualizadas automaticamente.';
+                include BASE_DIR . '/app/views/templates/campos_endereco_cascata.php';
+                ?>
 
                 <button type="submit" class="wms-btn-primary w-100">Confirmar Alocação Física</button>
             </form>
 
             <p class="text-secondary mt-3 mb-0" style="color:#64748B;font-size:13px">
-                Dica: se o leitor USB bipar o produto, ele envia <em>Enter</em> automaticamente.
-                Use o campo do endereço na sequência ou digite o endereço manualmente.
+                Dica: se o leitor USB bipar o produto, ele envia <em>Enter</em> automaticamente e o foco
+                vai para o corredor. Selecione corredor, galpão e prateleira onde está armazenando
+                (a sugestão do sistema já vem pré-selecionada em ordem crescente).
             </p>
         </div>
     </div>

@@ -109,8 +109,9 @@ $temStatus = $p['respondido_em'] !== null;
                     <div class="mb-2">
                         <label class="form-label">Número do cliente (WhatsApp)</label>
                         <input class="form-control form-control-sm" type="text" name="contato"
-                               value="<?php echo SecurityHelper::e($p['cliente_contato'] ?? '21 98003-0872'); ?>"
-                               placeholder="DDD + número" autocomplete="off">
+                               value="<?php echo SecurityHelper::e($p['cliente_contato'] ?? ''); ?>"
+                               placeholder="DDD + número do WhatsApp do cliente" autocomplete="off">
+                        <div class="form-text">Sem número padrão: informe o contato do cliente a cada reenvio.</div>
                     </div>
                     <button class="btn btn-dark btn-sm w-100" type="submit">Disparar avaliação novamente</button>
                 </form>

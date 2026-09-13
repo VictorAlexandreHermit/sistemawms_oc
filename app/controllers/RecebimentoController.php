@@ -60,6 +60,7 @@ final class RecebimentoController
         $codigos    = $_POST['codigo_barras'] ?? [];
         $quantidades = $_POST['quantidade'] ?? [];
         $descricoes = $_POST['descricao'] ?? [];
+        $curvas     = $_POST['curva_abc'] ?? [];
 
         if (!is_array($codigos) || empty($codigos)) {
             ViewHelper::setFlash('erro', 'Informe ao menos um item (código de barras) para a entrada manual.');
@@ -74,6 +75,10 @@ final class RecebimentoController
             $codigo = trim((string) ($codigos[$i] ?? ''));
             $qtd    = (int) ($quantidades[$i] ?? 0);
             $desc   = trim((string) ($descricoes[$i] ?? ''));
+            $curva  = strtoupper(trim((string) ($curvas[$i] ?? '')));
+            if (!in_array($curva, ['A', 'B', 'C'], true)) {
+                $curva = 'C';
+            }
             if ($codigo === '') {
                 continue;
             }
@@ -82,7 +87,7 @@ final class RecebimentoController
                 continue;
             }
             try {
-                $produto = ProdutoModel::obterOuCriarManual($codigo, $desc);
+                $produto = ProdutoModel::obterOuCriarManual($codigo, $desc, $curva);
             } catch (RuntimeException $e) {
                 $erros[] = $e->getMessage();
                 continue;

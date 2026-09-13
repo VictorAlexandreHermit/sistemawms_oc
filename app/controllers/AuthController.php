@@ -22,7 +22,7 @@ final class AuthController
     {
         CsrfHelper::checarRequisicao();
 
-        $login = trim($_POST['login'] ?? $_POST['matricula'] ?? '');
+        $login = strtoupper(trim($_POST['login'] ?? $_POST['matricula'] ?? ''));
         $senha = (string) ($_POST['senha'] ?? '');
 
         $erroLogin = null;

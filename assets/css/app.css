@@ -280,6 +280,15 @@ a { color: var(--wms-deep-slate); }
     background-color: rgba(220,38,38,.18);
     color: #FECACA;
 }
+.wms-sidebar .wms-nav {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding-bottom: .5rem;
+}
+.wms-sidebar .wms-nav::-webkit-scrollbar { width: 6px; }
+.wms-sidebar .wms-nav::-webkit-scrollbar-track { background: transparent; }
+.wms-sidebar .wms-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,.18); border-radius: 999px; }
 
 /* Área de conteúdo fluida */
 .wms-content {
@@ -475,6 +484,14 @@ a { color: var(--wms-deep-slate); }
     margin-top: .3rem;
 }
 
+/* ============ Login: matrícula sempre em maiúsculas ============ */
+.form-control-uppercase {
+    text-transform: uppercase;
+}
+.form-control-uppercase::placeholder {
+    text-transform: none;
+}
+
 /* ============ Toggle de visibilidade da senha (login) ============ */
 .input-group-senha .form-control {
     border-right: 0;
@@ -528,6 +545,7 @@ a { color: var(--wms-deep-slate); }
     }
     .wms-sidebar .nav-section, .wms-sidebar .sidebar-footer { display: none; }
     .wms-sidebar .nav-item { border-left: 0; border-bottom: 3px solid transparent; white-space: nowrap; padding: .9rem 1rem; }
+    .wms-sidebar .wms-nav { flex: 0 0 auto; overflow-y: visible; padding-bottom: 0; }
     .wms-sidebar .nav-item.active { border-bottom-color: #2563EB; }
     .wms-content { padding: 1.25rem 16px; }
 }

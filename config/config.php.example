@@ -83,7 +83,7 @@ $configuracao = [
         // Para envio WhatsApp REAL: coloque 'api' e preencha 'evolution_api'
         // com os dados da sua instância (ex.: instância do Gerenciamento da
         // Evolution API em http://localhost:8080 ou um host na nuvem).
-        // Teste com o número do próprio operador, ex.: "5521980030872".
+        // O número de destino é sempre o contato do cliente registrado no pedido.
         'modo' => 'simulacao',
         'evolution_api' => [
             'url' => '',       // Ex.: http://localhost:8080/message/sendText

@@ -25,8 +25,9 @@ $login     = $login ?? '';
 
                 <div class="mb-3">
                     <label class="form-label" for="login">Login</label>
-                    <input class="form-control <?php echo $erroLogin !== null ? 'is-invalid' : ''; ?>" type="text" id="login" name="login"
+                    <input class="form-control form-control-uppercase <?php echo $erroLogin !== null ? 'is-invalid' : ''; ?>" type="text" id="login" name="login"
                            placeholder="" required autofocus autocomplete="username"
+                           oninput="this.value = this.value.toUpperCase()"
                            value="<?php echo SecurityHelper::e($login ?? ''); ?>">
                     <?php if ($erroLogin !== null): ?>
                         <div class="campo-erro"><?php echo SecurityHelper::e($erroLogin); ?></div>

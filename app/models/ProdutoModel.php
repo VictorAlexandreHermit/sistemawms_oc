@@ -89,18 +89,33 @@ final class ProdutoModel
      * o produto é cadastrado automaticamente com um SKU interno único
      * ("código de barras interno" gerado pelo sistema), evitando duplicidade
      * entre fornecedores. O catálogo é atualizado no ato do recebimento.
+     * A Curva ABC escolhida (A/B/C) define a prioridade de movimentação.
      *
      * @return array Produto existente ou recém-criado.
      */
-    public static function obterOuCriarManual(string $codigo, string $descricao = ''): array
+    public static function obterOuCriarManual(string $codigo, string $descricao = '', string $curva = 'C'): array
     {
         $codigo = trim($codigo);
         if ($codigo === '') {
             throw new RuntimeException('Informe um código de barras para a entrada manual.');
         }
+        $curva = strtoupper(trim($curva));
+        if (!in_array($curva, ['A', 'B', 'C'], true)) {
+            $curva = 'C';
+        }
 
         $existente = self::buscarPorCodigoBarras($codigo);
         if ($existente !== null) {
+            if ($curva !== strtoupper((string) $existente['curva_abc'])) {
+                $pdo = Database::conexao();
+                $up = $pdo->prepare('UPDATE produtos SET curva_abc = :curva, updated_by = :usuario WHERE id = :id');
+                $up->execute([
+                    ':curva'   => $curva,
+                    ':usuario' => AuthHelper::usuario('id'),
+                    ':id'      => (int) $existente['id'],
+                ]);
+                $existente['curva_abc'] = $curva;
+            }
             return $existente;
         }
 
@@ -117,7 +132,7 @@ final class ProdutoModel
                 ':codigo'     => mb_substr($codigo, 0, 100),
                 ':descricao' => mb_substr($descricaoExtra, 0, 255),
                 ':unidade'    => 'UN',
-                ':curva'      => 'C',
+                ':curva'      => $curva,
                 ':criadoPor'  => AuthHelper::usuario('id'),
             ]);
             $id = (int) $pdo->lastInsertId();

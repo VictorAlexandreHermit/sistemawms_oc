@@ -50,6 +50,8 @@ final class GuardaController
             'subtitulo' => 'Nota ' . SecurityHelper::e($pedido['numero_nota_xml']) . ' — bipe o produto e o endereço físico.',
             'pedido'    => $pedido,
             'pendentes' => $pendentes,
+            'enderecosOpcoes' => EnderecoModel::listarComOcupacao(),
+            'enderecoSugerido' => EnderecoModel::enderecoSugerido(),
         ]);
     }
 
@@ -59,7 +61,12 @@ final class GuardaController
         CsrfHelper::checarRequisicao();
 
         $produtoCodigo = trim($_POST['produto'] ?? '');
-        $enderecoCodigo = trim($_POST['endereco'] ?? '');
+        $corredor      = strtoupper(trim($_POST['corredor'] ?? ''));
+        $galpao        = strtoupper(trim($_POST['galpao'] ?? ''));
+        $prateleira    = strtoupper(trim($_POST['prateleira'] ?? ''));
+        $enderecoCodigo = ($corredor !== '' && $galpao !== '' && $prateleira !== '')
+            ? $corredor . '-' . $galpao . '-' . $prateleira
+            : trim($_POST['endereco'] ?? '');
 
         if ($produtoCodigo === '' || $enderecoCodigo === '') {
             ViewHelper::setFlash('erro', 'Bipe o produto e o endereço físico de destino.');

@@ -28,11 +28,26 @@ $rotaBase = explode('/', $rotaAtiva)[0];
             <span class="brand-text">WMS AGILIZA</span>
         </div>
 
+        <nav class="wms-nav">
         <div class="nav-section">Operação</div>
 
         <?php if (AuthHelper::ehGestor()): ?>
         <a class="nav-item <?php echo $rotaBase === 'dashboard' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/dashboard">Dashboard</a>
         <?php endif; ?>
+
+        <a class="nav-item <?php echo $rotaBase === 'kanban' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/kanban">Kanban</a>
+
+        <?php if (AuthHelper::ehGestor()): ?>
+        <a class="nav-item <?php echo $rotaBase === 'configuracoes' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/configuracoes">SLAs do Kanban</a>
+        <?php endif; ?>
+
+        <?php if (AuthHelper::ehAdministrador()): ?>
+        <a class="nav-item <?php echo $rotaBase === 'usuarios' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/usuarios">Usuários e Contas</a>
+        <?php endif; ?>
+
+        <a class="nav-item <?php echo $rotaBase === 'otif' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/otif/painel">Relatórios OTIF</a>
+
+        <div class="nav-section">Recebimento</div>
 
         <a class="nav-item <?php echo $rotaBase === 'recebimento' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/recebimento">Recebimento</a>
 
@@ -45,30 +60,28 @@ $rotaBase = explode('/', $rotaAtiva)[0];
         </a>
         <?php endif; ?>
 
-        <a class="nav-item <?php echo $rotaBase === 'guarda' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/guarda">Guarda (Putaway)</a>
-        <a class="nav-item <?php echo $rotaBase === 'kanban' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/kanban">Kanban</a>
-        <a class="nav-item <?php echo $rotaBase === 'separacao' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/separacao">Separação e Embalagem</a>
         <a class="nav-item <?php echo $rotaBase === 'avarias' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/avarias">Avarias e Quarentena</a>
-        <a class="nav-item <?php echo $rotaBase === 'auditoria' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/auditoria">Auditoria de Estoque</a>
-        <a class="nav-item <?php echo $rotaBase === 'otif' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/otif/painel">Relatórios OTIF</a>
 
-        <div class="nav-section">Cadastros</div>
+        <div class="nav-section">Transporte</div>
+
+        <a class="nav-item <?php echo $rotaBase === 'guarda' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/guarda">Guarda (Putaway)</a>
+
+        <div class="nav-section">Picking & Packing</div>
+
+        <a class="nav-item <?php echo $rotaBase === 'separacao' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/separacao">Separação e Embalagem</a>
+
+        <div class="nav-section">Geral</div>
+
         <a class="nav-item <?php echo $rotaBase === 'produtos' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/produtos">Produtos</a>
 
         <?php if (AuthHelper::ehGestor()): ?>
         <a class="nav-item <?php echo $rotaBase === 'enderecos' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/enderecos">Endereços Físicos</a>
         <?php endif; ?>
 
-        <?php if (AuthHelper::ehGestor()): ?>
-        <div class="nav-section">Gestão</div>
-        <a class="nav-item <?php echo $rotaBase === 'configuracoes' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/configuracoes">SLAs do Kanban</a>
-        <?php endif; ?>
-
-        <?php if (AuthHelper::ehAdministrador()): ?>
-        <a class="nav-item <?php echo $rotaBase === 'usuarios' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/usuarios">Usuários e Contas</a>
-        <?php endif; ?>
+        <a class="nav-item <?php echo $rotaBase === 'auditoria' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/auditoria">Auditoria de Estoque</a>
 
         <a class="nav-item nav-item-sair" href="<?php echo BASE_URL; ?>/logout">↪ Sair da operação</a>
+        </nav>
 
         <div class="sidebar-footer">
             <div class="mb-2">
