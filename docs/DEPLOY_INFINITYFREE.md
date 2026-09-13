@@ -95,18 +95,52 @@ Antes de começar, confirme que:
    - **IMPORTANTE:** NÃO suba a pasta `.git`. Suba só o conteúdo do projeto.
 5. Aguarde o upload terminar (pode levar alguns minutos).
 
-### Opção B — FTP (FileZilla, recomendado para muitos arquivos)
+### Opção B — FTP (FileZilla, RECOMENDADA)
 
-1. Instale o **FileZilla** (https://filezilla-project.org/download.php).
-2. No painel da InfinityFree, anote das **FTP credentials**: host, usuário, senha.
-3. No FileZilla: `File → Site Manager → New Site`, preencha host/usuário/senha.
-4. Conecte. Lado direito (servidor): entre em **htdocs**.
-5. Arraste a pasta do projeto do lado esquerdo (seu computador) para o direito.
-6. Espere a fila de envio terminar (status "Successful").
+> ⚠️ **Lições aprendidas no 1º deploy (seguir à risca):**
+
+1. Instale o **FileZilla Client** (NÃO o Server) em
+   https://filezilla-project.org/download.php.
+2. **A senha do FTP NÃO é a senha do seu login no painel.** Ela é gerada
+   automaticamente pela InfinityFree e fica na tabela **"FTP Details"**:
+   - Acesse `https://dash.infinityfree.com` → **Accounts** → **Manage**
+     na sua conta → procure a tabela **"FTP Details"**.
+   - Pegue dali o **host** (ex.: `ftpupload.net`), o **username** e a
+     **password** (clique em **Show/Mostrar**).
+3. Se você criou a conta com **"Login com Google"**: ainda assim vá em
+   **Settings → Change password** e crie uma senha, e use a que estiver
+   na tabela FTP Details para o FileZilla (o painel e o FTP podem usar
+   senhas diferentes).
+4. No FileZilla, preencha nos campos do topo: Host, Usuário, Senha,
+   Porta `21` → **Conexão rápida**.
+5. Conexão com sucesso = mensagem **`Listagem do diretório "/" bem sucedida`**
+   no log. Se aparecer `530 Login authentication failed`, a senha usada não
+   é a do FTP Details (ou ainda não sincronizou — espere ~15 min e tente de novo).
+6. Lado direito (servidor): **entre em `htdocs`**.
+   > ─── DICA IMPORTANTE ───
+   > Em contas recém-criadas, o `htdocs` pode demorar **algumas horas** para
+   > aparecer (provisionamento). O site fica servindo uma página de segurança
+   > (JS) e o FileZilla/FIle Manager mostram tudo **vazio** nesse período.
+   > **Aguarde, não é erro.** Teste: acesse o site e crie/delete uma pasta de
+   > teste no FTP. Quando `htdocs` aparecer, o deploy já pode ser feito.
+7. Delete o que houver em `htdocs` (opcional; evita conflito).
+8. **Suba o CONTEÚDO** do projeto (arquivos soltos, NÃO a pasta embrulhada):
+   - Local: extraia o `.zip` preparado (com o `config/config.php` de produção)
+     numa pasta, ex.: `wms_para_subir`.
+   - FileZilla: **Ctrl+A** em `wms_para_subir` → arraste para dentro de `htdocs`.
+   - Espere a fila de envio terminar (status "Successful").
+   - **NUNCA suba a pasta `.git` nem `.gitignore`.**
+9. O **File Manager** do navegador é instável (lista vazia, sumiço de
+   arquivos). **Prefira sempre o FileZilla para uploads.**
 
 ---
 
 ## 6. Ajustar o arquivo de configuração do banco
+
+> **Na prática do 1º deploy:** o `config/config.php` de produção já é
+> gerado dentro do `.zip` de deploy (apontando para o hostname/banco da
+> InfinityFree) **ANTES** de subir os arquivos. Assim você não mexe em
+> nada no servidor. Os passos abaixo servem para refazer/confirmar à mão.
 
 Agora você precisa dizer ao sistema onde está o banco de dados da InfinityFree.
 
@@ -240,6 +274,10 @@ Confirme que tudo funciona NO AR:
 - **Mantenha o GitHub atualizado:** antes de começar a trabalhar e ao terminar,
   rode `git add -A`, `git commit -m "descrição"` e `git push`. Assim seu código
   tem backup também.
+- **O GitHub é o seu "backup do código", mas NÃO do site em si.** Dados criados
+  no site (pedidos, usuários novos, fotos de upload) vivem no banco da
+  InfinityFree e nos arquivos de upload — esses só são preservados com
+  **exportação do banco (phpMyAdmin)** periodicamente.
 
 ---
 
