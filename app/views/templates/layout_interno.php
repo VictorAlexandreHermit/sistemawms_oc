@@ -60,8 +60,6 @@ $rotaBase = explode('/', $rotaAtiva)[0];
         </a>
         <?php endif; ?>
 
-        <a class="nav-item <?php echo $rotaBase === 'avarias' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/avarias">Avarias e Quarentena</a>
-
         <div class="nav-section">Transporte</div>
 
         <a class="nav-item <?php echo $rotaBase === 'guarda' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/guarda">Guarda (Putaway)</a>
@@ -77,6 +75,8 @@ $rotaBase = explode('/', $rotaAtiva)[0];
         <?php if (AuthHelper::ehGestor()): ?>
         <a class="nav-item <?php echo $rotaBase === 'enderecos' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/enderecos">Endereços Físicos</a>
         <?php endif; ?>
+
+        <a class="nav-item <?php echo $rotaBase === 'avarias' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/avarias">Avarias e Quarentena</a>
 
         <a class="nav-item <?php echo $rotaBase === 'auditoria' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/auditoria">Auditoria de Estoque</a>
 
