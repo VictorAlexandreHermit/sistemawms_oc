@@ -32,9 +32,11 @@ final class ProdutosController
     {
         AuthHelper::requireLogin();
         ViewHelper::render('produtos/formulario', [
-            'titulo'    => 'Novo Produto',
-            'subtitulo' => '',
-            'produto'   => null,
+            'titulo'      => 'Novo Produto',
+            'subtitulo'   => '',
+            'produto'     => null,
+            'diretorio'   => EnderecoModel::diretorio(),
+            'corredores'  => self::corredoresParaFormulario(),
         ]);
     }
 
@@ -62,9 +64,13 @@ final class ProdutosController
             'sku'            => trim($_POST['sku'] ?? ''),
             'codigo_barras'  => trim($_POST['codigo_barras'] ?? ''),
             'descricao'      => trim($_POST['descricao'] ?? ''),
-            'unidade_medida' => trim($_POST['unidade_medida'] ?? 'UN'),
+            'unidade_medida' => strtoupper(trim($_POST['unidade_medida'] ?? 'UN')),
             'curva_abc'      => strtoupper(trim($_POST['curva_abc'] ?? 'C')),
         ];
+
+        $quantidadeInicial = max(0, (int) ($_POST['quantidade_inicial'] ?? 0));
+        $corredor   = strtoupper(trim($_POST['corredor'] ?? ''));
+        $prateleira = strtoupper(trim($_POST['prateleira'] ?? ''));
 
         if ($dados['sku'] === '' || $dados['codigo_barras'] === '') {
             ViewHelper::setFlash('erro', 'SKU e código de barras são obrigatórios.');
@@ -73,8 +79,18 @@ final class ProdutosController
         if (!in_array($dados['curva_abc'], ['A', 'B', 'C'], true)) {
             $dados['curva_abc'] = 'C';
         }
+        if ($id === null && $quantidadeInicial > 0 && ($corredor === '' || $prateleira === '')) {
+            ViewHelper::setFlash('erro', 'Informe corredor e prateleira para cadastrar o estoque inicial.');
+            Router::redirecionar('produtos/novo');
+        }
 
-        ProdutoModel::salvar($dados, $id);
+        $novoId = ProdutoModel::salvar($dados, $id);
+
+        if ($id === null && $quantidadeInicial > 0) {
+            $endereco = EnderecoModel::obterOuCriarPorCorredorPrateleira($corredor, $prateleira);
+            EstoqueModel::entrada($novoId, (int) $endereco['id'], $quantidadeInicial);
+        }
+
         ViewHelper::setFlash('sucesso', 'Produto ' . ($id ? 'atualizado' : 'criado') . ' com sucesso.');
         Router::redirecionar('produtos');
     }
@@ -86,5 +102,13 @@ final class ProdutosController
         ProdutoModel::excluir($id);
         ViewHelper::setFlash('sucesso', 'Produto removido (soft delete).');
         Router::redirecionar('produtos');
+    }
+
+    private static function corredoresParaFormulario(): array
+    {
+        $corredores = array_map(function (array $reg) {
+            return $reg['corredor'];
+        }, EnderecoModel::diretorio());
+        return array_values(array_unique($corredores));
     }
 }

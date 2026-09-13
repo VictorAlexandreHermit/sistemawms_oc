@@ -31,6 +31,9 @@ if (PHP_SAPI !== 'cli' && isset($_SERVER['HTTP_HOST'])) {
 define('BASE_URL', $baseUrl);
 define('URL_PUBLICA', $baseUrl);
 
+// Galpão único do sistema: todas as posições pertencem a ele (C01-G01-P01).
+define('GALPAO_UNICO', 'G01');
+
 $configuracao = [
     'db' => [
         'host'       => 'localhost',

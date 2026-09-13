@@ -18,14 +18,14 @@ $e = $endereco; // null na criação
                            placeholder="C01">
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">Galpão *</label>
-                    <input class="form-control" type="text" name="galpao" value="<?php echo SecurityHelper::e($e['galpao'] ?? ''); ?>" maxlength="5" required
-                           placeholder="G01">
-                </div>
-                <div class="col-md-4">
                     <label class="form-label">Prateleira *</label>
                     <input class="form-control" type="text" name="prateleira" value="<?php echo SecurityHelper::e($e['prateleira'] ?? ''); ?>" maxlength="5" required
                            placeholder="P01">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Galpão</label>
+                    <input class="form-control" type="text" value="<?php echo SecurityHelper::e(GALPAO_UNICO); ?>" disabled>
+                    <div class="form-text">Galpão único do sistema — todas as posições pertencem a ele.</div>
                 </div>
                 <div class="col-12">
                     <label class="form-label">Descrição</label>

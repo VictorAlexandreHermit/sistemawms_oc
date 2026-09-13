@@ -15,7 +15,7 @@
                         <tr>
                             <th>Etapa</th>
                             <th>Descrição</th>
-                            <th class="text-center" style="width:200px">Limite (minutos)</th>
+                            <th class="text-center" style="width:200px">Limite (horas)</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -28,19 +28,27 @@
                         ];
                         ?>
                         <?php foreach ($slas as $sla): ?>
+                        <?php
+                        $minutosSla = (int) $sla['tempo_limite_minutos'];
+                        $horasSla   = $minutosSla / 60;
+                        $valorSla   = ($horasSla === (int) $horasSla)
+                                      ? (string) (int) $horasSla
+                                      : number_format($horasSla, 1, '.', '');
+                        ?>
                         <tr>
                             <td class="fw-semibold"><?php echo SecurityHelper::e($sla['etapa_kanban']); ?></td>
                             <td class="text-secondary"><?php echo SecurityHelper::e($descricoes[$sla['etapa_kanban']] ?? ''); ?></td>
                             <td>
-                                <input class="form-control text-center tabular-nums" type="number" min="1"
+                                <input class="form-control text-center tabular-nums" type="number" min="0.5" step="0.5"
                                        name="sla_<?php echo SecurityHelper::e($sla['etapa_kanban']); ?>"
-                                       value="<?php echo (int) $sla['tempo_limite_minutos']; ?>">
+                                       value="<?php echo SecurityHelper::e($valorSla); ?>">
                             </td>
                         </tr>
                         <?php endforeach; ?>
                     </tbody>
                 </table>
             </div>
+            <div class="form-text text-secondary mb-3">Padrão recomendado: 2 horas por tarefa. Valores fracionados são aceitos (ex.: 1,5 h = 90 min).</div>
             <button type="submit" class="wms-btn-primary">Salvar Limites</button>
         </form>
     </div>

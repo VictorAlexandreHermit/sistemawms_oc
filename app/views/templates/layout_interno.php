@@ -54,7 +54,10 @@ $rotaBase = explode('/', $rotaAtiva)[0];
 
         <div class="nav-section">Cadastros</div>
         <a class="nav-item <?php echo $rotaBase === 'produtos' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/produtos">Produtos</a>
+
+        <?php if (AuthHelper::ehGestor()): ?>
         <a class="nav-item <?php echo $rotaBase === 'enderecos' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/enderecos">Endereços Físicos</a>
+        <?php endif; ?>
 
         <?php if (AuthHelper::ehGestor()): ?>
         <div class="nav-section">Gestão</div>
@@ -71,7 +74,7 @@ $rotaBase = explode('/', $rotaAtiva)[0];
                 <?php echo SecurityHelper::e($usuarioNome); ?>
                 <span class="d-block text-capitalize" style="color:#64748B"><?php echo strtolower(SecurityHelper::e($perfil)); ?></span>
             </div>
-            <a href="<?php echo BASE_URL; ?>/logout" style="color:#E2E8F0;text-decoration:none;font-weight:600">Sair da operação →</a>
+            <a href="<?php echo BASE_URL; ?>/logout" style="color:#EDF5E1;text-decoration:none;font-weight:700">Sair da operação →</a>
         </div>
     </aside>
 

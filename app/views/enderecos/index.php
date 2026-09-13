@@ -12,7 +12,9 @@
                 <input class="form-control form-control-sm" type="text" name="q" value="<?php echo SecurityHelper::e($termo); ?>" placeholder="Buscar CORREDOR/GALPAO/PRATELEIRA…">
                 <button class="btn btn-outline-slate btn-sm">Filtrar</button>
             </form>
+            <?php if (AuthHelper::ehAdministrador()): ?>
             <a class="btn btn-dark btn-sm text-decoration-none" href="<?php echo BASE_URL; ?>/enderecos/novo">+ Novo Endereço</a>
+            <?php endif; ?>
         </div>
     </div>
     <div class="p-3">
@@ -25,7 +27,9 @@
                         <th class="text-center">Tipo</th>
                         <th class="text-center">Capacidade</th>
                         <th style="min-width:220px">Ocupação</th>
+                        <?php if (AuthHelper::ehAdministrador()): ?>
                         <th class="text-end">Ações</th>
+                        <?php endif; ?>
                     </tr>
                 </thead>
                 <tbody>
@@ -50,6 +54,7 @@
                                 <span class="small tabular-nums text-secondary"><?php echo (int) $e['total_ocupado']; ?>/<?php echo (int) $e['capacidade_maxima']; ?></span>
                             </div>
                         </td>
+                        <?php if (AuthHelper::ehAdministrador()): ?>
                         <td class="text-end">
                             <a class="btn btn-outline-slate btn-sm" href="<?php echo BASE_URL; ?>/enderecos/editar/<?php echo (int) $e['id']; ?>">Editar</a>
                             <?php if ((int) $e['quarantena'] !== 1): ?>
@@ -60,6 +65,7 @@
                             </form>
                             <?php endif; ?>
                         </td>
+                        <?php endif; ?>
                     </tr>
                     <?php endforeach; ?>
                     <?php if (empty($enderecos)): ?>

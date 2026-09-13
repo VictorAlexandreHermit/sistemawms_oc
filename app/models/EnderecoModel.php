@@ -74,10 +74,33 @@ final class EnderecoModel
     {
         $pdo = Database::conexao();
         $dados['corredor']    = strtoupper(trim($dados['corredor']));
-        $dados['galpao']      = strtoupper(trim($dados['galpao']));
+        $dados['galpao']      = GALPAO_UNICO; // Galpão único do sistema
         $dados['prateleira']  = strtoupper(trim($dados['prateleira']));
 
         if ($id === null) {
+            // Reaproveita posição eventualmente soft-deletada: o índice único
+            // uk_endereco_fisico considera também linhas com deleted_at preenchido.
+            $stmt = $pdo->prepare('SELECT id FROM enderecos
+                                   WHERE corredor = :c AND galpao = :g AND prateleira = :p
+                                     AND quarantena != 1 LIMIT 1');
+            $stmt->execute([
+                ':c' => $dados['corredor'],
+                ':g' => GALPAO_UNICO,
+                ':p' => $dados['prateleira'],
+            ]);
+            $reuso = $stmt->fetch();
+            if ($reuso) {
+                $stmt = $pdo->prepare('UPDATE enderecos
+                                       SET descricao = :descricao, capacidade_maxima = :capacidade, deleted_at = NULL
+                                       WHERE id = :id');
+                $stmt->execute([
+                    ':descricao'  => $dados['descricao'] ?? '',
+                    ':capacidade' => (int) ($dados['capacidade_maxima'] ?? 1000),
+                    ':id'         => (int) $reuso['id'],
+                ]);
+                return (int) $reuso['id'];
+            }
+
             $sql = 'INSERT INTO enderecos (corredor, galpao, prateleira, descricao, capacidade_maxima)
                     VALUES (:corredor, :galpao, :prateleira, :descricao, :capacidade)';
         } else {
@@ -111,5 +134,55 @@ final class EnderecoModel
     public static function formato(array $endereco): string
     {
         return $endereco['corredor'] . '-' . $endereco['galpao'] . '-' . $endereco['prateleira'];
+    }
+
+    /**
+     * Corredores e prateleiras existentes (para seleção no cadastro de produto).
+     * Retorna linhas não-quarantena ordenadas por corredor/prateleira.
+     */
+    public static function diretorio(array $termos = ['corredor', 'prateleira']): array
+    {
+        $pdo = Database::conexao();
+        $sql = 'SELECT e.corredor, e.prateleira, e.galpao
+                FROM enderecos e
+                WHERE e.quarantena != 1 AND e.deleted_at IS NULL
+                ORDER BY e.corredor ASC, e.prateleira ASC';
+        $res = $pdo->query($sql)->fetchAll();
+        return array_map(function (array $linha) use ($termos) {
+            $ret = [];
+            foreach ($termos as $t) {
+                $ret[$t] = $linha[$t];
+            }
+            return $ret;
+        }, $res);
+    }
+
+    /**
+     * Localiza ou cria uma posição física por corredor+prateleira (galpão único).
+     * Usado pelo cadastro de produto para registrar o saldo inicial.
+     */
+    public static function obterOuCriarPorCorredorPrateleira(string $corredor, string $prateleira): array
+    {
+        $corredor = strtoupper(trim($corredor));
+        $prateleira = strtoupper(trim($prateleira));
+
+        $pdo = Database::conexao();
+        $stmt = $pdo->prepare('SELECT * FROM enderecos
+                               WHERE corredor = :c AND galpao = :g AND prateleira = :p
+                                 AND quarantena != 1 AND deleted_at IS NULL
+                               LIMIT 1');
+        $stmt->execute([':c' => $corredor, ':g' => GALPAO_UNICO, ':p' => $prateleira]);
+        $existente = $stmt->fetch();
+        if ($existente) {
+            return $existente;
+        }
+
+        $id = self::salvar([
+            'corredor'   => $corredor,
+            'prateleira' => $prateleira,
+            'descricao'  => 'Posição criada automaticamente no cadastro de produto',
+            'capacidade_maxima' => 1000,
+        ]);
+        return self::buscarPorId($id);
     }
 }

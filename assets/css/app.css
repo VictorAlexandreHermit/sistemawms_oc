@@ -1,6 +1,6 @@
 /*
  * WMS Agiliza — Tema "Precision Logistics"
- * Deep Slate #0F172A | Neutros #F8FAFC/#FFFFFF | Radius 4px
+ * Preto com estrelas #000000 | Neutros #9C9C9C/#FFFFFF | Sidebar #EDF5E1
  */
 
 /* ============ Tipografia Inter (local) ============ */
@@ -35,9 +35,9 @@
 
 /* ============ Tokens ============ */
 :root {
-    --wms-deep-slate: #0F172A;
-    --wms-deep-slate-light: #1E293B;
-    --wms-bg: #F8FAFC;
+    --wms-deep-slate: #000000;
+    --wms-deep-slate-light: #111111;
+    --wms-bg: #9C9C9C;
     --wms-surface: #FFFFFF;
     --wms-border: #E2E8F0;
     --wms-border-strong: #CBD5E1;
@@ -50,7 +50,7 @@
     --wms-info: #0284C7;
     --wms-radius: 0.25rem;
     --wms-sidebar: 260px;
-    --wms-shadow-panel: 0 4px 12px rgba(15, 23, 42, 0.08);
+    --wms-shadow-panel: 0 4px 12px rgba(0, 0, 0, 0.10);
 }
 
 /* ============ Base ============ */
@@ -195,8 +195,17 @@ a { color: var(--wms-deep-slate); }
 .wms-sidebar {
     width: var(--wms-sidebar);
     flex-shrink: 0;
-    background-color: var(--wms-deep-slate);
-    color: #CBD5E1;
+    background-color: #000000;
+    background-image:
+        radial-gradient(1.5px 1.5px at 40px 60px, rgba(255,255,255,.75), transparent 100%),
+        radial-gradient(1px 1px at 120px 30px, rgba(255,255,255,.55), transparent 100%),
+        radial-gradient(1.5px 1.5px at 200px 120px, rgba(255,255,255,.65), transparent 100%),
+        radial-gradient(1px 1px at 70px 200px, rgba(255,255,255,.5), transparent 100%),
+        radial-gradient(2px 2px at 220px 60px, rgba(255,255,255,.7), transparent 100%),
+        radial-gradient(1px 1px at 150px 260px, rgba(255,255,255,.6), transparent 100%),
+        radial-gradient(1.5px 1.5px at 30px 320px, rgba(255,255,255,.55), transparent 100%),
+        radial-gradient(1px 1px at 240px 200px, rgba(255,255,255,.65), transparent 100%);
+    color: #EDF5E1;
     position: sticky;
     top: 0;
     height: 100vh;
@@ -209,16 +218,16 @@ a { color: var(--wms-deep-slate); }
     align-items: center;
     gap: .6rem;
     padding: 1.25rem 1.25rem;
-    color: #FFFFFF;
+    color: #EDF5E1;
     font-weight: 700;
     font-size: 17px;
     letter-spacing: -.01em;
-    border-bottom: 1px solid rgba(148,163,184,.15);
+    border-bottom: 1px solid rgba(255,255,255,.14);
 }
 .wms-sidebar .brand .dot {
     width: 10px;
     height: 10px;
-    background-color: #2563EB;
+    background-color: #EDF5E1;
     margin: 0;
     flex-shrink: 0;
 }
@@ -227,7 +236,7 @@ a { color: var(--wms-deep-slate); }
     font-weight: 700;
     letter-spacing: .08em;
     text-transform: uppercase;
-    color: #64748B;
+    color: #9C9C9C;
     padding: 1.1rem 1.25rem .4rem;
 }
 .wms-sidebar .nav-item {
@@ -235,27 +244,27 @@ a { color: var(--wms-deep-slate); }
     align-items: center;
     gap: .7rem;
     padding: .55rem 1.25rem;
-    color: #CBD5E1;
+    color: #EDF5E1;
     text-decoration: none;
-    font-weight: 500;
+    font-weight: 700;
     border-left: 4px solid transparent;
     transition: background-color .12s ease, color .12s ease;
 }
 .wms-sidebar .nav-item:hover {
-    background-color: rgba(148,163,184,.10);
+    background-color: rgba(255,255,255,.08);
     color: #FFFFFF;
 }
 .wms-sidebar .nav-item.active {
-    background-color: rgba(37,99,235,.16);
-    border-left-color: #2563EB;
+    background-color: rgba(255,255,255,.12);
+    border-left-color: #EDF5E1;
     color: #FFFFFF;
 }
 .wms-sidebar .sidebar-footer {
     margin-top: auto;
     padding: 1rem 1.25rem;
-    border-top: 1px solid rgba(148,163,184,.15);
+    border-top: 1px solid rgba(255,255,255,.14);
     font-size: 12px;
-    color: #94A3B8;
+    color: #9C9C9C;
 }
 
 /* Área de conteúdo fluida */

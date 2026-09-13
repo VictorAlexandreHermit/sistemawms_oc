@@ -14,7 +14,7 @@ final class ConfiguracoesController
 
         ViewHelper::render('configuracoes/index', [
             'titulo'    => 'Configurações Operacionais',
-            'subtitulo' => 'Limites de tempo (SLA) por etapa — alimentam o alerta visual do Kanban.',
+            'subtitulo' => 'Limites de tempo (SLA) em horas por etapa — padrão 2 horas — alimentam o alerta visual do Kanban.',
             'slas'      => ConfigSlaModel::todos(),
         ]);
     }
@@ -27,9 +27,10 @@ final class ConfiguracoesController
 
         $etapasPermitidas = ['RECEBIDO', 'A_ARMAZENAR', 'A_SEPARAR', 'A_EXPEDIR'];
         foreach ($etapasPermitidas as $etapa) {
-            $valor = (int) ($_POST['sla_' . $etapa] ?? 0);
-            if ($valor > 0) {
-                ConfigSlaModel::atualizar($etapa, $valor, (int) AuthHelper::usuario('id'));
+            $horas  = (float) str_replace(',', '.', $_POST['sla_' . $etapa] ?? '0');
+            $minutos = (int) round($horas * 60);
+            if ($minutos > 0) {
+                ConfigSlaModel::atualizar($etapa, $minutos, (int) AuthHelper::usuario('id'));
             }
         }
 

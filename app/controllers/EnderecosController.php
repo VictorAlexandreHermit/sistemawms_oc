@@ -11,6 +11,7 @@ final class EnderecosController
     public function actionIndex(): void
     {
         AuthHelper::requireLogin();
+        AuthHelper::requirePerfil(['GESTOR', 'ADMINISTRADOR']);
 
         $termo = trim($_GET['q'] ?? '');
         $enderecos = EnderecoModel::listar($termo !== '' ? $termo : null);
@@ -38,6 +39,7 @@ final class EnderecosController
     public function actionNovo(): void
     {
         AuthHelper::requireLogin();
+        AuthHelper::requirePerfil('ADMINISTRADOR');
         ViewHelper::render('enderecos/formulario', [
             'titulo'    => 'Novo Endereço',
             'subtitulo' => '',
@@ -48,6 +50,7 @@ final class EnderecosController
     public function actionEditar(int $id): void
     {
         AuthHelper::requireLogin();
+        AuthHelper::requirePerfil('ADMINISTRADOR');
         $endereco = EnderecoModel::buscarPorId($id);
         if ($endereco === null) {
             ViewHelper::setFlash('erro', 'Endereço não encontrado.');
@@ -63,28 +66,26 @@ final class EnderecosController
     public function actionSalvar(?int $id = null): void
     {
         AuthHelper::requireLogin();
+        AuthHelper::requirePerfil('ADMINISTRADOR');
         CsrfHelper::checarRequisicao();
 
         $corredor    = trim($_POST['corredor'] ?? '');
-        $galpao      = trim($_POST['galpao'] ?? '');
         $prateleira  = trim($_POST['prateleira'] ?? '');
         $cap         = (int) ($_POST['capacidade_maxima'] ?? 1000);
 
-        if ($corredor === '' || $galpao === '' || $prateleira === '' || $cap <= 0) {
-            ViewHelper::setFlash('erro', 'Corredor, galpão e prateleira são obrigatórios e a capacidade deve ser positiva.');
+        if ($corredor === '' || $prateleira === '' || $cap <= 0) {
+            ViewHelper::setFlash('erro', 'Corredor e prateleira são obrigatórios e a capacidade deve ser positiva.');
             Router::redirecionar($id ? 'enderecos/editar/' . $id : 'enderecos/novo');
         }
 
         if (preg_match('/^[A-Za-z0-9]{1,5}$/', $corredor) !== 1 ||
-            preg_match('/^[A-Za-z0-9]{1,5}$/', $galpao) !== 1 ||
             preg_match('/^[A-Za-z0-9]{1,5}$/', $prateleira) !== 1) {
-            ViewHelper::setFlash('erro', 'Corredor, galpão e prateleira aceitam até 5 caracteres alfanuméricos (padrão CORREDOR-GALPAO-PRATELEIRA).');
+            ViewHelper::setFlash('erro', 'Corredor e prateleira aceitam até 5 caracteres alfanuméricos (padrão CORREDOR-GALPAO-PRATELEIRA).');
             Router::redirecionar($id ? 'enderecos/editar/' . $id : 'enderecos/novo');
         }
 
         EnderecoModel::salvar([
             'corredor'    => $corredor,
-            'galpao'      => $galpao,
             'prateleira'  => $prateleira,
             'descricao'   => trim($_POST['descricao'] ?? ''),
             'capacidade_maxima' => $cap,
@@ -97,6 +98,7 @@ final class EnderecosController
     public function actionExcluir(int $id): void
     {
         AuthHelper::requireLogin();
+        AuthHelper::requirePerfil('ADMINISTRADOR');
         CsrfHelper::checarRequisicao();
         EnderecoModel::excluir($id);
         ViewHelper::setFlash('sucesso', 'Endereço removido (soft delete).');

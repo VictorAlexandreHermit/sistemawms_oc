@@ -8,7 +8,9 @@
     // Bipagem via leitor USB: ao pressionar Enter no campo de leitura,
     // dispara o submit do formulário pai imediatamente.
     // =============================================================
-    document.querySelectorAll('.bipador').forEach(function (input) {
+    var bipadores = document.querySelectorAll('.bipador');
+
+    bipadores.forEach(function (input) {
         input.addEventListener('keydown', function (event) {
             if (event.key === 'Enter') {
                 event.preventDefault();
@@ -31,10 +33,19 @@
                 if (form) form.submit();
             }
         });
-        document.addEventListener('click', function () {
-            input.focus();
-        });
     });
+
+    // Auto-foco assistivo APENAS quando a tela tem um único campo de bipagem.
+    // Nunca rouba o foco quando o usuário clica em outro campo, botão ou link,
+    // para não travar formulários com múltiplos campos (ex.: Avarias).
+    if (bipadores.length === 1) {
+        document.addEventListener('click', function (event) {
+            var alvo = event.target;
+            var tag = (alvo && alvo.tagName || '').toLowerCase();
+            if (['input', 'select', 'textarea', 'button', 'a', 'label'].indexOf(tag) !== -1) return;
+            bipadores[0].focus();
+        });
+    }
 
     // =============================================================
     // Cronômetros dos cards do Kanban (tempo decorrido na etapa)
