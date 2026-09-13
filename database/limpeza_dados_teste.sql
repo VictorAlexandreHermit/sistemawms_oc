@@ -16,30 +16,30 @@
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- Respostas e envios de avaliação OTIF
-TRUNCATE TABLE pesquisas_otif;
+DELETE FROM pesquisas_otif;
 
 -- Divergências de conferência do recebimento
-TRUNCATE TABLE divergencias_recebimento;
+DELETE FROM divergencias_recebimento;
 
 -- Avarias e quarentena
-TRUNCATE TABLE avarias;
+DELETE FROM avarias;
 
 -- Itens e pedidos/cargas (inclusive o histórico de entregues)
-TRUNCATE TABLE pedido_itens;
-TRUNCATE TABLE pedidos;
+DELETE FROM pedido_itens;
+DELETE FROM pedidos;
 
 -- Saldos de estoque (zera a ocupação do Dashboard)
-TRUNCATE TABLE estoque_saldos;
+DELETE FROM estoque_saldos;
 
 -- Logs de movimentação/auditoria
-TRUNCATE TABLE logs_auditoria_estoque;
+DELETE FROM logs_auditoria_estoque;
 
 -- Logs de aplicação e segurança
-TRUNCATE TABLE logs_erro;
-TRUNCATE TABLE logs_seguranca;
+DELETE FROM logs_erro;
+DELETE FROM logs_seguranca;
 
 -- Catálogo de produtos de demonstração (ex.: SKU-001 "parafuso inox")
-TRUNCATE TABLE produtos;
+DELETE FROM produtos;
 
 SET FOREIGN_KEY_CHECKS = 1;
 
