@@ -430,11 +430,19 @@ a { color: var(--wms-deep-slate); }
 /* Login */
 .login-page {
     min-height: 100vh;
-    background-color: var(--wms-bg);
+    background-color: #0B0B0D;
+    background-image:
+        linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px),
+        radial-gradient(ellipse 80% 55% at 50% -12%, rgba(255,255,255,.14), transparent 60%);
+    background-size: 46px 46px, 46px 46px, 100% 100%;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 1.5rem;
+}
+.login-logo h1 {
+    color: #1C1C1E;
 }
 
 /* ============ Responsivo ============ */

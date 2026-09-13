@@ -47,8 +47,8 @@ $rotaBase = explode('/', $rotaAtiva)[0];
 
         <a class="nav-item <?php echo $rotaBase === 'guarda' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/guarda">Guarda (Putaway)</a>
         <a class="nav-item <?php echo $rotaBase === 'kanban' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/kanban">Kanban</a>
-        <a class="nav-item <?php echo $rotaBase === 'separacao' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/separacao">Separação &amp; Embalagem</a>
-        <a class="nav-item <?php echo $rotaBase === 'avarias' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/avarias">Avarias &amp; Quarentena</a>
+        <a class="nav-item <?php echo $rotaBase === 'separacao' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/separacao">Separação e Embalagem</a>
+        <a class="nav-item <?php echo $rotaBase === 'avarias' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/avarias">Avarias e Quarentena</a>
         <a class="nav-item <?php echo $rotaBase === 'auditoria' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/auditoria">Auditoria de Estoque</a>
         <a class="nav-item <?php echo $rotaBase === 'otif' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/otif/painel">Relatórios OTIF</a>
 
@@ -65,7 +65,7 @@ $rotaBase = explode('/', $rotaAtiva)[0];
         <?php endif; ?>
 
         <?php if (AuthHelper::ehAdministrador()): ?>
-        <a class="nav-item <?php echo $rotaBase === 'usuarios' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/usuarios">Usuários &amp; Contas</a>
+        <a class="nav-item <?php echo $rotaBase === 'usuarios' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/usuarios">Usuários e Contas</a>
         <?php endif; ?>
 
         <div class="sidebar-footer">

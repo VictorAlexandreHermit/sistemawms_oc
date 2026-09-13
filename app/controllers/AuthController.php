@@ -22,20 +22,20 @@ final class AuthController
     {
         CsrfHelper::checarRequisicao();
 
-        $matricula = trim($_POST['matricula'] ?? '');
-        $senha     = (string) ($_POST['senha'] ?? '');
+        $login = trim($_POST['login'] ?? $_POST['matricula'] ?? '');
+        $senha = (string) ($_POST['senha'] ?? '');
 
-        if ($matricula === '' || $senha === '') {
+        if ($login === '' || $senha === '') {
             LogHelper::registrarSeguranca('LOGIN_CAMPOS_VAZIOS', 'Tentativa de login sem preenchimento.');
-            ViewHelper::setFlash('erro', 'Informe matrícula e senha.');
+            ViewHelper::setFlash('erro', 'Informe login e senha.');
             Router::redirecionar('login');
         }
 
-        $usuario = UsuarioModel::autenticar($matricula, $senha);
+        $usuario = UsuarioModel::autenticar($login, $senha);
 
         if ($usuario === null) {
-            LogHelper::registrarSeguranca('LOGIN_FALHA', 'Matrícula informada: ' . $matricula);
-            ViewHelper::setFlash('erro', 'Matrícula ou senha inválidos.');
+            LogHelper::registrarSeguranca('LOGIN_FALHA', 'Login informado: ' . $login);
+            ViewHelper::setFlash('erro', 'Login ou senha inválidos.');
             Router::redirecionar('login');
         }
 

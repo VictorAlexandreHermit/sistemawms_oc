@@ -22,7 +22,7 @@ final class SeparacaoController
         unset($p);
 
         ViewHelper::render('separacao/index', [
-            'titulo'    => 'Separação &amp; Embalagem',
+            'titulo'    => 'Separação e Embalagem',
             'subtitulo' => 'Bipe obrigatório item a item; a expedição só é liberada com 100% da conferência.',
             'aSeparar'  => $aSeparar,
             'aExpedir'  => $aExpedir,
@@ -48,7 +48,7 @@ final class SeparacaoController
         unset($item);
 
         ViewHelper::render('separacao/conferir', [
-            'titulo'    => 'Estação de Picking &amp; Packing',
+            'titulo'    => 'Estação de Picking e Packing',
             'subtitulo' => 'Pedido ' . $pedido['numero_nota_xml'] . ' · ' . $pedido['cliente_nome'] . ' — bipe os itens coletados.',
             'pedido'    => $pedido,
             'itens'     => $itens,
