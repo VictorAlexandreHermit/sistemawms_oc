@@ -83,6 +83,74 @@ final class ProdutoModel
         return $stmt->fetch() !== false;
     }
 
+    /**
+     * Localiza ou cria um produto a partir de um código de barras digitado
+     * na Entrada Manual do Recebimento. Se o código não existir no catálogo,
+     * o produto é cadastrado automaticamente com um SKU interno único
+     * ("código de barras interno" gerado pelo sistema), evitando duplicidade
+     * entre fornecedores. O catálogo é atualizado no ato do recebimento.
+     *
+     * @return array Produto existente ou recém-criado.
+     */
+    public static function obterOuCriarManual(string $codigo, string $descricao = ''): array
+    {
+        $codigo = trim($codigo);
+        if ($codigo === '') {
+            throw new RuntimeException('Informe um código de barras para a entrada manual.');
+        }
+
+        $existente = self::buscarPorCodigoBarras($codigo);
+        if ($existente !== null) {
+            return $existente;
+        }
+
+        $descricaoExtra = trim($descricao) !== '' ? $descricao : 'Produto recebido por código de barras ' . $codigo;
+
+        $pdo = Database::conexao();
+        $pdo->beginTransaction();
+        try {
+            $sql = 'INSERT INTO produtos (sku, codigo_barras, descricao, unidade_medida, curva_abc, created_by)
+                    VALUES (:sku, :codigo, :descricao, :unidade, :curva, :criadoPor)';
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([
+                ':sku'        => self::gerarSkuInterno(),
+                ':codigo'     => mb_substr($codigo, 0, 100),
+                ':descricao' => mb_substr($descricaoExtra, 0, 255),
+                ':unidade'    => 'UN',
+                ':curva'      => 'C',
+                ':criadoPor'  => AuthHelper::usuario('id'),
+            ]);
+            $id = (int) $pdo->lastInsertId();
+            $pdo->commit();
+        } catch (\Throwable $e) {
+            $pdo->rollBack();
+            LogHelper::registrarErro($e);
+            throw new RuntimeException('Não foi possível cadastrar o produto do código "' . $codigo . '" no catálogo.');
+        }
+
+        return self::buscarPorId($id);
+    }
+
+    /**
+     * Gera um SKU interno sequencial no formato "WM-000001" (código de barras
+     * interno do sistema), sempre único.
+     */
+    private static function gerarSkuInterno(): string
+    {
+        $pdo = Database::conexao();
+        $stmt = $pdo->query('SELECT MAX(CAST(SUBSTRING(sku, 7) AS UNSIGNED)) AS ultimo
+                             FROM produtos WHERE sku LIKE "WM-%"');
+        $linha = $stmt->fetch();
+        $numero = (int) ($linha['ultimo'] ?? 0) + 1;
+
+        $sku = 'WM-' . str_pad((string) $numero, 6, '0', STR_PAD_LEFT);
+        while (self::skuExiste($sku)) {
+            $numero++;
+            $sku = 'WM-' . str_pad((string) $numero, 6, '0', STR_PAD_LEFT);
+        }
+        return $sku;
+    }
+
     public static function listar(?string $termo = null, $incluirExcluidos = false): array
     {
         $pdo = Database::conexao();
@@ -138,7 +206,18 @@ final class ProdutoModel
     public static function excluir(int $id): void
     {
         $pdo = Database::conexao();
-        $stmt = $pdo->prepare('UPDATE produtos SET deleted_at = NOW() WHERE id = :id AND deleted_at IS NULL');
-        $stmt->execute([':id' => $id]);
+        $pdo->beginTransaction();
+        try {
+            // Zera os saldos e a auditoria do produto para o estoque refletir a exclusão
+            $pdo->prepare('DELETE FROM estoque_saldos WHERE produto_id = :id')->execute([':id' => $id]);
+            $pdo->prepare('DELETE FROM logs_auditoria_estoque WHERE produto_id = :id')->execute([':id' => $id]);
+            $stmt = $pdo->prepare('UPDATE produtos SET deleted_at = NOW() WHERE id = :id AND deleted_at IS NULL');
+            $stmt->execute([':id' => $id]);
+            $pdo->commit();
+        } catch (\Throwable $e) {
+            $pdo->rollBack();
+            LogHelper::registrarErro($e);
+            throw $e;
+        }
     }
 }

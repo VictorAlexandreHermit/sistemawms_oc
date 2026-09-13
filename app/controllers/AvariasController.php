@@ -22,6 +22,8 @@ final class AvariasController
             'registros' => AvariaModel::listar(),
             'saldoQtr'  => AvariaModel::saldoEmQuarentena(),
             'fornecedores' => AvariaModel::ocorrenciasPorFornecedor(),
+            'enderecosOpcoes' => EnderecoModel::listarComOcupacao(),
+            'enderecoSugerido' => EnderecoModel::enderecoSugerido(),
         ]);
     }
 
@@ -31,7 +33,12 @@ final class AvariasController
         CsrfHelper::checarRequisicao();
 
         $codigoProduto  = trim($_POST['produto'] ?? '');
-        $codigoEndereco = trim($_POST['endereco'] ?? '');
+        $corredor       = strtoupper(trim($_POST['corredor'] ?? ''));
+        $galpao         = strtoupper(trim($_POST['galpao'] ?? ''));
+        $prateleira     = strtoupper(trim($_POST['prateleira'] ?? ''));
+        $codigoEndereco = ($corredor !== '' && $galpao !== '' && $prateleira !== '')
+            ? $corredor . '-' . $galpao . '-' . $prateleira
+            : '';
         $quantidade     = (int) ($_POST['quantidade'] ?? 0);
         $motivo         = trim($_POST['motivo'] ?? '');
         $etapa          = $_POST['etapa'] ?? 'OUTROS';

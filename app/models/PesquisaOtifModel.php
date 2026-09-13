@@ -26,6 +26,39 @@ final class PesquisaOtifModel
         return $reg ?: null;
     }
 
+    public static function buscarPorId(int $id): ?array
+    {
+        $pdo = Database::conexao();
+        $stmt = $pdo->prepare(
+            'SELECT po.*, p.numero_nota_xml, p.cliente_nome, p.cliente_contato, p.ts_entregue
+             FROM pesquisas_otif po
+             INNER JOIN pedidos p ON p.id = po.pedido_id
+             WHERE po.id = :id LIMIT 1'
+        );
+        $stmt->execute([':id' => $id]);
+        $reg = $stmt->fetch();
+        return $reg ?: null;
+    }
+
+    /**
+     * Limpa o histórico de avaliações OTIF e o histórico de entregas,
+     * preservando as cargas que ainda estão em operação no kanban.
+     */
+    public static function limparHistorico(): void
+    {
+        $pdo = Database::conexao();
+        $pdo->beginTransaction();
+        try {
+            $pdo->exec('DELETE FROM pesquisas_otif');
+            $pdo->exec('DELETE FROM pedidos WHERE status_kanban = "ENTREGUE"');
+            $pdo->commit();
+        } catch (\Throwable $e) {
+            $pdo->rollBack();
+            LogHelper::registrarErro($e);
+            throw new RuntimeException('Não foi possível limpar o histórico OTIF.');
+        }
+    }
+
     public static function listar(?string $status = null): array
     {
         $pdo = Database::conexao();

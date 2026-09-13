@@ -272,6 +272,14 @@ a { color: var(--wms-deep-slate); }
     font-size: 12px;
     color: #9C9C9C;
 }
+.wms-sidebar .nav-item-sair {
+    border-left-color: rgba(255,255,255,.25);
+    color: #FCA5A5;
+}
+.wms-sidebar .nav-item-sair:hover {
+    background-color: rgba(220,38,38,.18);
+    color: #FECACA;
+}
 
 /* Área de conteúdo fluida */
 .wms-content {
@@ -458,6 +466,51 @@ a { color: var(--wms-deep-slate); }
     font-weight: 700;
     letter-spacing: .18em;
     color: #1C1C1E;
+}
+
+.campo-erro {
+    color: #DC2626;
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: .3rem;
+}
+
+/* ============ Toggle de visibilidade da senha (login) ============ */
+.input-group-senha .form-control {
+    border-right: 0;
+    border-radius: var(--wms-radius) 0 0 var(--wms-radius);
+}
+.input-group-senha .form-control:focus {
+    border-right: 0;
+}
+.btn-toggle-senha {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #FFFFFF;
+    border: 1px solid #CBD5E1;
+    border-left: 0;
+    border-radius: 0 var(--wms-radius) var(--wms-radius) 0;
+    color: #64748B;
+    padding: 0 .75rem;
+}
+.btn-toggle-senha:hover, .btn-toggle-senha:focus {
+    background-color: #F1F5F9;
+    color: var(--wms-deep-slate);
+    border-color: var(--wms-primary-blue);
+}
+.btn-toggle-senha .icone-olho-cortado { display: none; }
+.btn-toggle-senha.senha-visivel .icone-olho { display: none; }
+.btn-toggle-senha.senha-visivel .icone-olho-cortado { display: inline-block; }
+.input-group-senha:focus-within .btn-toggle-senha {
+    border-color: var(--wms-primary-blue);
+}
+.input-group-senha .form-control.is-invalid {
+    border-color: #DC2626;
+    box-shadow: none;
+}
+.input-group-senha:has(.form-control.is-invalid) .btn-toggle-senha {
+    border-color: #DC2626;
 }
 
 .print-brand { display: none; }

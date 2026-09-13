@@ -31,12 +31,66 @@
         </div>
 
         <div class="wms-card mt-4">
+            <div class="wms-card-header">Entrada manual por código de barras</div>
+            <div class="p-4">
+                <p class="text-secondary" style="color:#475569">
+                    Recebimento sem XML: digite ou bipe o (s) código (s) de barras e a quantidade.
+                    Códigos novos são cadastrados automaticamente no <strong>Catálogo de Produtos</strong>
+                    com um <strong>SKU interno</strong> gerado pelo sistema. A carga é liberada direto
+                    para a <strong>Guarda (Putaway)</strong>.
+                </p>
+
+                <form method="post" action="<?php echo BASE_URL; ?>/recebimento/entrada-manual" autocomplete="off">
+                    <?php echo CsrfHelper::campo(); ?>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="fornecedor">Fornecedor (opcional)</label>
+                        <input class="form-control" type="text" id="fornecedor" name="fornecedor"
+                               maxlength="150" placeholder="Ex.: Distribuidora Alfa">
+                    </div>
+
+                    <div id="manual-linhas">
+                        <div class="manual-linha border rounded p-2 mb-2">
+                            <div class="row g-2">
+                                <div class="col-7">
+                                    <input class="form-control" type="text" name="codigo_barras[]"
+                                           placeholder="Código de barras" required autocomplete="off">
+                                </div>
+                                <div class="col-3">
+                                    <input class="form-control" type="number" name="quantidade[]"
+                                           value="1" min="1" required>
+                                </div>
+                                <div class="col-2 d-flex align-items-center">
+                                    <button type="button" class="btn btn-outline-slate btn-sm btn-remove-linha w-100">Remover</button>
+                                </div>
+                            </div>
+                            <div class="row g-2 mt-0">
+                                <div class="col-12">
+                                    <input class="form-control" type="text" name="descricao[]"
+                                           placeholder="Descrição do produto (opcional — para o catálogo)"
+                                           autocomplete="off">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-outline-slate btn-sm" id="btn-add-linha">Adicionar item</button>
+                        <button type="submit" class="wms-btn-primary">Registrar entrada manual</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="wms-card mt-4">
             <div class="wms-card-header">Dica de operação</div>
             <div class="p-4">
                 <ul class="mb-0 ps-3" style="color:#475569">
                     <li>Bipe cada item físico com o <strong>leitor USB</strong> (Enter automático).</li>
                     <li>Também é possível digitar o código manualmente no campo de leitura.</li>
-                    <li>As quantidades esperadas do XML ficam <strong>ocultas</strong> durante a conferência.</li>
+                    <li>Produto novo: o sistema gera um <strong>SKU interno</strong> (ex.: <code>WM-000001</code>)
+                        que vira o método de busca e endereçamento do item.</li>
+                    <li>O código de barras do fornecedor fica salvo e reutilizado nas próximas entradas.</li>
                 </ul>
             </div>
         </div>
@@ -80,3 +134,36 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var lista = document.getElementById('manual-linhas');
+    var btnAdd = document.getElementById('btn-add-linha');
+    function primeiraLinha() {
+        return lista.querySelector('.manual-linha');
+    }
+    function removerEvento() {
+        lista.querySelectorAll('.btn-remove-linha').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var linhas = lista.querySelectorAll('.manual-linha');
+                if (linhas.length > 1) {
+                    this.closest('.manual-linha').remove();
+                } else {
+                    var inputs = this.closest('.manual-linha').querySelectorAll('input');
+                    inputs.forEach(function (i) { i.value = ''; });
+                }
+            });
+        });
+    }
+    if (btnAdd) {
+        btnAdd.addEventListener('click', function () {
+            var linha = primeiraLinha();
+            var clone = linha.cloneNode(true);
+            clone.querySelectorAll('input').forEach(function (i) { i.value = i.name === 'quantidade[]' ? '1' : ''; });
+            lista.appendChild(clone);
+            removerEvento();
+        });
+    }
+    removerEvento();
+});
+</script>

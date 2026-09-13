@@ -80,14 +80,21 @@ function badgePerfil(string $perfil): string
                                     <td><?php echo SecurityHelper::e($u['nome_completo']); ?></td>
                                     <td><?php echo badgePerfil($u['perfil']); ?></td>
                                     <td class="text-center">
-                                        <span class="badge <?php echo (int) $u['ativo'] === 1 ? 'badge-success-lg' : 'badge-danger-lg'; ?>">
-                                            <?php echo (int) $u['ativo'] === 1 ? 'Ativo' : 'Inativo'; ?>
-                                        </span>
+                                        <?php if ($u['deleted_at'] !== null): ?>
+                                            <span class="badge badge-neutral-lg">Excluído</span>
+                                        <?php else: ?>
+                                            <span class="badge <?php echo (int) $u['ativo'] === 1 ? 'badge-success-lg' : 'badge-danger-lg'; ?>">
+                                                <?php echo (int) $u['ativo'] === 1 ? 'Ativo' : 'Inativo'; ?>
+                                            </span>
+                                        <?php endif; ?>
                                     </td>
                                     <td class="text-secondary" style="white-space:nowrap">
                                         <?php echo SecurityHelper::e(DateHelper::exibir($u['created_at'])); ?>
                                     </td>
                                     <td class="text-end">
+                                        <?php if ($u['deleted_at'] !== null): ?>
+                                            <span class="text-secondary small" style="color:#94A3B8">Conta removida</span>
+                                        <?php else: ?>
                                         <div class="d-inline-flex flex-column gap-1 align-items-end">
                                             <form method="post"
                                                   action="<?php echo BASE_URL; ?>/usuarios/resetar-senha/<?php echo (int) $u['id']; ?>"
@@ -110,8 +117,14 @@ function badgePerfil(string $perfil): string
                                                     <button class="btn btn-link btn-sm p-0" style="color:#15803D">Reativar</button>
                                                 </form>
                                                 <?php endif; ?>
+                                                <form method="post" action="<?php echo BASE_URL; ?>/usuarios/excluir/<?php echo (int) $u['id']; ?>"
+                                                      onsubmit="return confirm('Excluir permanentemente a conta de <?php echo SecurityHelper::e($u['matricula']); ?>? Esta ação não pode ser desfeita.')">
+                                                    <?php echo CsrfHelper::campo(); ?>
+                                                    <button class="btn btn-link btn-sm p-0" style="color:#B91C1C">Excluir conta</button>
+                                                </form>
                                             <?php endif; ?>
                                         </div>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                                 <?php endforeach; ?>

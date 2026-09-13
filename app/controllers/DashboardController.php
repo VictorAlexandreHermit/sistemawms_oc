@@ -15,10 +15,13 @@ final class DashboardController
 
         $pdo = Database::conexao();
 
-        // 1) Ocupação do estoque
+        // 1) Ocupação do estoque (apenas produtos ativos no catálogo)
         $ocupacao = $pdo->query(
             'SELECT COALESCE(SUM(e.capacidade_maxima),0) AS cap,
-                    COALESCE((SELECT SUM(es.quantidade) FROM estoque_saldos es WHERE es.status_saldo = "DISPONIVEL"),0) AS usado
+                    COALESCE((SELECT SUM(es.quantidade)
+                              FROM estoque_saldos es
+                              INNER JOIN produtos p ON p.id = es.produto_id AND p.deleted_at IS NULL
+                              WHERE es.status_saldo = "DISPONIVEL"),0) AS usado
              FROM enderecos e WHERE e.deleted_at IS NULL AND e.quarantena = 0'
         )->fetch();
 
@@ -111,8 +114,9 @@ final class DashboardController
 
         // 9) Produtos movimentados no dia
         $movimentadoshoje = $pdo->query(
-            'SELECT COUNT(DISTINCT produto_id) AS c FROM estoque_saldos
-             WHERE quantidade > 0 AND DATE(updated_at) = CURDATE()'
+            'SELECT COUNT(DISTINCT es.produto_id) AS c FROM estoque_saldos es
+             INNER JOIN produtos p ON p.id = es.produto_id AND p.deleted_at IS NULL
+             WHERE es.quantidade > 0 AND DATE(es.updated_at) = CURDATE()'
         )->fetch()['c'];
 
         ViewHelper::render('dashboard/index', [

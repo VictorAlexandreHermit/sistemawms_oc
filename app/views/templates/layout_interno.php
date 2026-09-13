@@ -68,6 +68,8 @@ $rotaBase = explode('/', $rotaAtiva)[0];
         <a class="nav-item <?php echo $rotaBase === 'usuarios' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/usuarios">Usuários e Contas</a>
         <?php endif; ?>
 
+        <a class="nav-item nav-item-sair" href="<?php echo BASE_URL; ?>/logout">↪ Sair da operação</a>
+
         <div class="sidebar-footer">
             <div class="mb-2">
                 <span class="dot <?php echo AuthHelper::ehGestor() ? 'dot-warning' : 'dot-info'; ?>"></span>

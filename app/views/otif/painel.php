@@ -37,7 +37,14 @@ $t = $taxas;
         <div class="wms-card">
             <div class="wms-card-header d-flex justify-content-between align-items-center">
                 <span>Mapa de envios</span>
-                <div class="d-flex gap-1">
+                <div class="d-flex gap-1 align-items-center">
+                    <?php if (AuthHelper::ehGestor()): ?>
+                    <form method="post" action="<?php echo BASE_URL; ?>/otif/limpar-historico"
+                          onsubmit="return confirm('Limpar TODO o histórico OTIF e de entregas? As cargas em operação serão mantidas.')">
+                        <?php echo CsrfHelper::campo(); ?>
+                        <button class="btn btn-outline-slate btn-sm" type="submit">Limpar histórico</button>
+                    </form>
+                    <?php endif; ?>
                     <?php
                     $abas = ['TODAS' => '', 'PENDENTE' => 'PENDENTE', 'ENVIADO' => 'ENVIADO', 'FALHA' => 'FALHA'];
                     foreach ($abas as $rotulo => $valor):
@@ -57,11 +64,12 @@ $t = $taxas;
                                 <th class="text-center">Status envio</th>
                                 <th class="text-center">Resposta</th>
                                 <th class="text-center">Expira em</th>
+                                <th class="text-end">Ação</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php if (empty($pesquisas)): ?>
-                            <tr><td colspan="5" class="text-center py-4 text-secondary" style="color:#64748B">Nenhum envio neste filtro.</td></tr>
+                            <tr><td colspan="6" class="text-center py-4 text-secondary" style="color:#64748B">Nenhum envio neste filtro.</td></tr>
                             <?php else: ?>
                                 <?php foreach ($pesquisas as $po): ?>
                                 <tr>
@@ -83,6 +91,9 @@ $t = $taxas;
                                         <?php endif; ?>
                                     </td>
                                     <td class="text-center tabular-nums text-secondary"><?php echo SecurityHelper::e(DateHelper::exibirData($po['data_expiracao'])); ?></td>
+                                    <td class="text-end">
+                                        <a class="btn btn-outline-slate btn-sm" href="<?php echo BASE_URL; ?>/otif/resposta/<?php echo (int) $po['id']; ?>">Ver</a>
+                                    </td>
                                 </tr>
                                 <?php endforeach; ?>
                             <?php endif; ?>

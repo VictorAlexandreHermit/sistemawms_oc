@@ -245,7 +245,80 @@ Agora você precisa dizer ao sistema onde está o banco de dados da InfinityFree
 
 ---
 
-## 9. Verificação pós-deploy (checklist final)
+## 9. ATUALIZAÇÕES DO SISTEMA (v2 — novo pacote de mudanças)
+
+> Este trecho explica como aplicar o pacote de melhorias **sem perder os dados**
+> produzidos no site (usuários reais, pedidos, estoque).
+
+### 9.1 O que vem nesse pacote
+
+- **Limpeza total dos dados de teste** via SQL (phpMyAdmin) — o site fica "como
+  se nunca tivesse sido usado", mantendo as contas de login reais.
+- **Dashboard corrigido**: a ocupação de estoque não conta mais produtos
+  excluídos, e excluir um produto agora zera seus saldos (some o número
+  "fantasma" de itens).
+- **Usuários & Contas**: novo botão **"Excluir conta"** (exclusão lógica).
+- **Recebimento**: nova opção **"Entrada manual por código de barras"** — sem
+  XML, bipe o produto + quantidade (pode ser vários itens) e a carga vai
+  direto para a Guarda e atualiza o Kanban.
+- **Login**: mensagens específicas em vermelho abaixo de cada campo
+  ("Matrícula inexistente.", "Senha incorreta.", "Favor preencher o campo.").
+- **Logo otimizado**: peso reduzido de 870 KB → 77 KB (login carrega rápido).
+- **Sidebar**: item **"Sair da operação"** visível também no celular (o menu
+  inferior era oculto no mobile).
+- **Painel OTIF**: botão **"Limpar histórico"**, botão **"Ver"** (resposta
+  individual por cliente com fotos e observações) e botão de **reenvio**.
+
+### 9.2 Passo a passo
+
+1. **Limpar os dados de teste (produção):**
+   - phpMyAdmin do site (https://dash.infinityfree.com → phpMyAdmin).
+   - Selecione o banco `if0_42908161_wms_agiliza` → aba **SQL**.
+   - Cole o conteúdo de `database/limpeza_dados_teste.sql` → **Go**.
+   - Conferência: a consulta final do script deve retornar **0** em tudo.
+2. **Subir os novos arquivos (FileZilla):**
+   - Local: pasta `wms_para_subir` (atualize o conteúdo com este pacote).
+   - FileZilla → lado direito em `htdocs` → **Ctrl+A** do conteúdo local →
+     arraste para `htdocs` → **Overwrite** tudo.
+   - Subir arquivos NÃO apaga o banco — os dados continuam na InfinityFree.
+3. **Ativar o WhatsApp real (OTIF)** — veja a seção 9.3.
+
+### 9.3 Ativar envio real de WhatsApp (OTIF) — Evolution API
+
+O sistema já sabe enviar por WhatsApp **quando recebe os dados de uma
+instância Evolution API**. Você precisa de um servidor com a Evolution API
+rodando (pode ser no seu computador via port forwarding, num VPS barato, ou
+num host que ofereça o serviço), com um número do WhatsApp conectado.
+
+1. Na sua instância Evolution API, conecte o número que enviará as pesquisas
+   (ex.: o WhatsApp da empresa).
+2. Copie da instância:
+   - a **URL do endpoint** (ex.: `http://SEU_IP:8080/message/sendText`)
+   - o **nome da instância** `instance`
+   - a **chave de API** `apikey`
+3. Abra `wms_para_subir/config/config.php` e altere:
+   ```php
+   'modo' => 'api',
+   'evolution_api' => [
+       'url'      => 'http://SEU_IP:8080/message/sendText',
+       'instance' => 'minha_instancia',
+       'api_key'  => 'SUA_CHAVE_DE_API',
+   ],
+   ```
+4. Suba esse `config/config.php` via FileZilla para `htdocs/config/`.
+5. Para o teste dirigido ao seu celular: em uma avaliação (Painel OTIF → **Ver**),
+   deixe o contato **21 98003-0872** e clique em **"Disparar avaliação novamente"**.
+   O WhatsApp da instância enviará o link ao número informado.
+6. Enquanto `modo` estiver `simulacao`, **nenhuma mensagem é enviada de verdade**:
+   o sistema apenas marca como "ENVIADO" e registra o link no log de segurança.
+
+> ⚠️ A senha acessa redes sociais/mensageiros tem custo/regras da Meta. Para uso
+> profissional contrate um provedor de WhatsApp Business API/Evolution API ou use
+> um número próprio conectado à sua instância.
+
+---
+
+## 10. Verificação pós-deploy (checklist final)
 
 Confirme que tudo funciona NO AR:
 

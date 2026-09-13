@@ -111,4 +111,24 @@ final class UsuariosController
         }
         Router::redirecionar('usuarios');
     }
+
+    public function actionExcluir(int $id): void
+    {
+        AuthHelper::requirePerfil('ADMINISTRADOR');
+        CsrfHelper::checarRequisicao();
+
+        if ((int) $id === (int) AuthHelper::usuario('id')) {
+            ViewHelper::setFlash('erro', 'Você não pode excluir a própria conta.');
+            Router::redirecionar('usuarios');
+        }
+
+        $usuario = UsuarioModel::buscarPorId($id);
+        if ($usuario === null) {
+            ViewHelper::setFlash('erro', 'Usuário não encontrado.');
+        } else {
+            UsuarioModel::excluir($id);
+            ViewHelper::setFlash('sucesso', 'Conta de ' . $usuario['matricula'] . ' excluída permanentemente.');
+        }
+        Router::redirecionar('usuarios');
+    }
 }

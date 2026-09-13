@@ -45,6 +45,79 @@ final class RecebimentoController
         }
     }
 
+    /**
+     * Entrada manual por código de barras (sem XML): uma ou mais linhas de
+     * produto + quantidade. Códigos que ainda não existem no catálogo são
+     * cadastrados automaticamente com um SKU interno gerado pelo sistema.
+     * A carga é liberada direto para a Guarda.
+     */
+    public function actionEntradaManual(): void
+    {
+        AuthHelper::requireLogin();
+        CsrfHelper::checarRequisicao();
+
+        $fornecedor = trim($_POST['fornecedor'] ?? '');
+        $codigos    = $_POST['codigo_barras'] ?? [];
+        $quantidades = $_POST['quantidade'] ?? [];
+        $descricoes = $_POST['descricao'] ?? [];
+
+        if (!is_array($codigos) || empty($codigos)) {
+            ViewHelper::setFlash('erro', 'Informe ao menos um item (código de barras) para a entrada manual.');
+            Router::redirecionar('recebimento');
+        }
+
+        $itens   = [];
+        $erros   = [];
+        $criados = 0;
+        $totalLinhas = count($codigos);
+        for ($i = 0; $i < $totalLinhas; $i++) {
+            $codigo = trim((string) ($codigos[$i] ?? ''));
+            $qtd    = (int) ($quantidades[$i] ?? 0);
+            $desc   = trim((string) ($descricoes[$i] ?? ''));
+            if ($codigo === '') {
+                continue;
+            }
+            if ($qtd <= 0) {
+                $erros[] = 'Quantidade inválida para o código "' . $codigo . '".';
+                continue;
+            }
+            try {
+                $produto = ProdutoModel::obterOuCriarManual($codigo, $desc);
+            } catch (RuntimeException $e) {
+                $erros[] = $e->getMessage();
+                continue;
+            }
+            if ($produto === null) {
+                $erros[] = 'Não foi possível cadastrar o código "' . $codigo . '".';
+                continue;
+            }
+            $itens[] = ['produto_id' => (int) $produto['id'], 'quantidade' => $qtd];
+        }
+
+        if (empty($itens)) {
+            ViewHelper::setFlash('erro', empty($erros)
+                ? 'Nenhum item válido informado na entrada manual.'
+                : implode(' ', array_slice($erros, 0, 3)));
+            Router::redirecionar('recebimento');
+        }
+
+        try {
+            $pedidoId = PedidoModel::criarManual($itens, $fornecedor);
+        } catch (RuntimeException $e) {
+            ViewHelper::setFlash('erro', $e->getMessage());
+            Router::redirecionar('recebimento');
+        }
+
+        $mensagem = 'Mercadorias adicionadas com sucesso.';
+        if (!empty($erros)) {
+            $mensagem .= ' Alguns itens foram ignorados: ' . implode(' ', array_slice($erros, 0, 2));
+            ViewHelper::setFlash('aviso', $mensagem);
+        } else {
+            ViewHelper::setFlash('sucesso', $mensagem);
+        }
+        Router::redirecionar('recebimento');
+    }
+
     public function actionConferir(int $pedidoId): void
     {
         AuthHelper::requireLogin();

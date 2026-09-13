@@ -81,7 +81,7 @@ ViewHelper::setFlash('erro', $e->getMessage());
 
     // ----------- Área logada -----------
 
-    public function actionPainel(): void
+public function actionPainel(): void
     {
         AuthHelper::requireLogin();
 
@@ -94,6 +94,69 @@ ViewHelper::setFlash('erro', $e->getMessage());
             'criticas'  => PesquisaOtifModel::criticas(),
             'filtro'    => $status,
         ]);
+    }
+
+    public function actionResposta(int $id): void
+    {
+        AuthHelper::requireLogin();
+
+        $pesquisa = PesquisaOtifModel::buscarPorId($id);
+        if ($pesquisa === null) {
+            ViewHelper::setFlash('erro', 'Avaliação não encontrada.');
+            Router::redirecionar('otif/painel');
+        }
+
+        ViewHelper::render('otif/resposta', [
+            'titulo'    => 'Avaliação OTIF',
+            'subtitulo' => 'Resposta do cliente para a nota ' . SecurityHelper::e($pesquisa['numero_nota_xml']) . '.',
+            'pesquisa'  => $pesquisa,
+        ]);
+    }
+
+    public function actionReenviar(int $id): void
+    {
+        AuthHelper::requirePerfil('GESTOR');
+        CsrfHelper::checarRequisicao();
+
+        $pesquisa = PesquisaOtifModel::buscarPorId($id);
+        if ($pesquisa === null) {
+            ViewHelper::setFlash('erro', 'Avaliação não encontrada.');
+            Router::redirecionar('otif/painel');
+        }
+
+        $pedido = PedidoModel::buscarPorId((int) $pesquisa['pedido_id']);
+
+        $contato = trim($_POST['contato'] ?? '');
+        if ($contato !== '') {
+            $pdo = Database::conexao();
+            $stmt = $pdo->prepare('UPDATE pedidos SET cliente_contato = :contato WHERE id = :id');
+            $stmt->execute([':contato' => mb_substr($contato, 0, 100), ':id' => (int) $pesquisa['pedido_id']]);
+            $pedido['cliente_contato'] = $contato;
+        }
+
+        if ($pedido === null || $pedido['status_kanban'] !== 'ENTREGUE') {
+            ViewHelper::setFlash('erro', 'Reenvio só é possível para pedidos já entregues.');
+            Router::redirecionar('otif/painel');
+        }
+
+        $ok = OtifApiHelper::disparar($pedido);
+        ViewHelper::setFlash($ok ? 'sucesso' : 'erro',
+            $ok ? 'Avaliação reenviada para ' . SecurityHelper::e($pedido['cliente_contato'] ?: 'o contato do cliente') . '.' : 'Falha no reenvio (verifique o modo/envio e o contato).');
+        Router::redirecionar('otif/painel');
+    }
+
+    public function actionLimparHistorico(): void
+    {
+        AuthHelper::requirePerfil('GESTOR');
+        CsrfHelper::checarRequisicao();
+
+        try {
+            PesquisaOtifModel::limparHistorico();
+            ViewHelper::setFlash('sucesso', 'Histórico OTIF e de entregas limpo com sucesso.');
+        } catch (RuntimeException $e) {
+            ViewHelper::setFlash('erro', $e->getMessage());
+        }
+        Router::redirecionar('otif/painel');
     }
 }
 

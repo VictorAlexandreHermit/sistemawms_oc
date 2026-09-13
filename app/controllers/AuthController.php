@@ -25,24 +25,43 @@ final class AuthController
         $login = trim($_POST['login'] ?? $_POST['matricula'] ?? '');
         $senha = (string) ($_POST['senha'] ?? '');
 
+        $erroLogin = null;
+        $erroSenha = null;
+
+        if ($login === '') {
+            $erroLogin = 'Favor preencher o campo matrícula.';
+        }
+        if ($senha === '') {
+            $erroSenha = 'Favor preencher o campo senha.';
+        }
+
         if ($login === '' || $senha === '') {
             LogHelper::registrarSeguranca('LOGIN_CAMPOS_VAZIOS', 'Tentativa de login sem preenchimento.');
-            ViewHelper::setFlash('erro', 'Informe login e senha.');
-            Router::redirecionar('login');
+        } else {
+            $usuario = UsuarioModel::buscarPorMatricula($login);
+            if ($usuario === null) {
+                $erroLogin = 'Matrícula inexistente. Consulte o Administrador.';
+            } elseif ((int) $usuario['ativo'] !== 1) {
+                $erroLogin = 'Conta desativada. Consulte o Administrador.';
+            } elseif (!password_verify($senha, $usuario['senha_hash'])) {
+                $erroSenha = 'Senha incorreta.';
+            } else {
+                AuthHelper::iniciarSessao($usuario);
+                LogHelper::registrarSeguranca('LOGIN_SUCESSO', 'Login realizado.', (int) $usuario['id']);
+                Router::redirecionar(AuthHelper::ehGestor() ? 'dashboard' : 'kanban');
+            }
         }
 
-        $usuario = UsuarioModel::autenticar($login, $senha);
-
-        if ($usuario === null) {
+        if ($erroLogin !== null) {
             LogHelper::registrarSeguranca('LOGIN_FALHA', 'Login informado: ' . $login);
-            ViewHelper::setFlash('erro', 'Login ou senha inválidos.');
-            Router::redirecionar('login');
         }
 
-        AuthHelper::iniciarSessao($usuario);
-        LogHelper::registrarSeguranca('LOGIN_SUCESSO', 'Login realizado.', (int) $usuario['id']);
-
-        Router::redirecionar(AuthHelper::ehGestor() ? 'dashboard' : 'kanban');
+        ViewHelper::render('auth/login', [
+            'titulo'    => 'Acesso à Operação',
+            'erroLogin' => $erroLogin,
+            'erroSenha' => $erroSenha,
+            'login'     => $login,
+        ], 'externo');
     }
 
     public function actionLogout(): void

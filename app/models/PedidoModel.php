@@ -91,6 +91,82 @@ final class PedidoModel
         }
     }
 
+    /**
+     * Cria um recebimento manual (sem XML) por código de barras.
+     * A conferência é considerada 100% registrada na própria digitação,
+     * então a carga é liberada direto para a Guarda (putaway).
+     *
+     * @param array  $itens     [ ['produto_id' => int, 'quantidade' => int], ... ]
+     * @param string $fornecedor Emitente/fornecedor opcional da entrada.
+     */
+    public static function criarManual(array $itens, string $fornecedor = ''): int
+    {
+        if (empty($itens)) {
+            throw new RuntimeException('Informe ao menos um item para a entrada manual.');
+        }
+
+        // Agrega linhas do mesmo produto (o picking bipa por produto)
+        $agrupados = [];
+        foreach ($itens as $item) {
+            $produtoId = (int) $item['produto_id'];
+            $agrupados[$produtoId] = ($agrupados[$produtoId] ?? 0) + max(1, (int) $item['quantidade']);
+        }
+
+        $pdo = Database::conexao();
+        $pdo->beginTransaction();
+        try {
+            $chave = SecurityHelper::tokenAleatorio(22);
+            $token = SecurityHelper::tokenAleatorio(32);
+            $nota  = 'MAN-' . date('Ymd-His');
+
+            $sql = 'INSERT INTO pedidos (numero_nota_xml, chave_nfe, fornecedor_nome, cliente_nome,
+                                         status_kanban, prioridade_abc, token_otif)
+                    VALUES (:nota, :chave, :fornecedor, :cliente, :status, :prioridade, :token)';
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([
+                ':nota'       => mb_substr($nota, 0, 50),
+                ':chave'      => $chave,
+                ':fornecedor' => mb_substr(trim($fornecedor) ?: 'ENTRADA MANUAL', 0, 150),
+                ':cliente'    => 'OPERAÇÃO INTERNA',
+                ':status'     => 'RECEBIDO',
+                ':prioridade' => 'C',
+                ':token'      => $token,
+            ]);
+            $pedidoId = (int) $pdo->lastInsertId();
+
+            $ins = $pdo->prepare('INSERT INTO pedido_itens (pedido_id, produto_id, quantidade_esperada, quantidade_conferida, status_conferencia)
+                                  VALUES (:pedido, :produto, :qtd, :qtd, "CONFERIDO")');
+            foreach ($agrupados as $produtoId => $qtd) {
+                $ins->execute([
+                    ':pedido'  => $pedidoId,
+                    ':produto' => $produtoId,
+                    ':qtd'     => $qtd,
+                ]);
+            }
+
+            self::definirPrioridadeAbc($pedidoId);
+
+            $expiracao = DateHelper::adicionarDiasUteis(DateHelper::agora(), (int) APP_CONFIG['otif']['expiracao_dias_uteis']);
+            $otif = $pdo->prepare('INSERT INTO pesquisas_otif (pedido_id, token_acesso, data_envio, data_expiracao)
+                                   VALUES (:pedido, :token, NULL, :expiracao)');
+            $otif->execute([
+                ':pedido'    => $pedidoId,
+                ':token'     => $token,
+                ':expiracao' => $expiracao->format('Y-m-d H:i:s'),
+            ]);
+
+            // Conferência 100% registrada: libera direto para a Guarda (putaway)
+            self::alterarStatus($pedidoId, 'A_ARMAZENAR');
+
+            $pdo->commit();
+            return $pedidoId;
+        } catch (\Throwable $e) {
+            $pdo->rollBack();
+            LogHelper::registrarErro($e);
+            throw new RuntimeException('Não foi possível registrar a entrada manual.');
+        }
+    }
+
     public static function definirPrioridadeAbc(int $pedidoId): void
     {
         $pdo = Database::conexao();

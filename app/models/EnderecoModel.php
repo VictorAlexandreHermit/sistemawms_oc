@@ -48,6 +48,44 @@ final class EnderecoModel
         return $reg ?: null;
     }
 
+    /**
+     * Endereços físicos (não-quarentena) com o total de unidades ocupadas,
+     * ordenados em ordem crescente (corredor, galpão, prateleira).
+     * Cada linha traz também a flag "cheio" (usado >= capacidade_maxima),
+     * usada pelos selects em cascata de Avarias/Auditoria.
+     */
+    public static function listarComOcupacao(): array
+    {
+        $pdo = Database::conexao();
+        $sql = 'SELECT e.id, e.corredor, e.galpao, e.prateleira, e.descricao, e.capacidade_maxima,
+                       COALESCE(SUM(CASE WHEN es.quantidade > 0 AND es.status_saldo = "DISPONIVEL" THEN es.quantidade END), 0) AS usado
+                FROM enderecos e
+                LEFT JOIN estoque_saldos es ON es.endereco_id = e.id
+                WHERE e.deleted_at IS NULL AND e.quarantena = 0
+                GROUP BY e.id
+                ORDER BY e.corredor ASC, e.galpao ASC, e.prateleira ASC';
+        $enderecos = $pdo->query($sql)->fetchAll();
+        foreach ($enderecos as &$e) {
+            $e['cheio'] = (int) $e['usado'] >= (int) $e['capacidade_maxima'] ? 1 : 0;
+        }
+        unset($e);
+        return $enderecos;
+    }
+
+    /**
+     * Primeiro endereço físico com espaço em ordem crescente (ex.: C01-G01-P01).
+     * Quando o corredor 01 está cheio, o próximo livre (ex.: C02) é sugerido.
+     */
+    public static function enderecoSugerido(): ?array
+    {
+        foreach (self::listarComOcupacao() as $e) {
+            if ((int) $e['cheio'] === 0) {
+                return $e;
+            }
+        }
+        return null;
+    }
+
     public static function listar(?string $termo = null, $incluirExcluidos = false): array
     {
         $pdo = Database::conexao();

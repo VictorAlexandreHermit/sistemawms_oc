@@ -19,6 +19,8 @@ final class AuditoriaController
             'motivos'   => APP_CONFIG['motivos_ajuste'],
             'historico' => AuditoriaModel::historico($termo !== '' ? $termo : null),
             'termo'     => $termo,
+            'enderecosOpcoes' => EnderecoModel::listarComOcupacao(),
+            'enderecoSugerido' => EnderecoModel::enderecoSugerido(),
         ]);
     }
 
@@ -28,7 +30,12 @@ final class AuditoriaController
         CsrfHelper::checarRequisicao();
 
         $codigoProduto  = trim($_POST['produto'] ?? '');
-        $codigoEndereco = trim($_POST['endereco'] ?? '');
+        $corredor       = strtoupper(trim($_POST['corredor'] ?? ''));
+        $galpao         = strtoupper(trim($_POST['galpao'] ?? ''));
+        $prateleira     = strtoupper(trim($_POST['prateleira'] ?? ''));
+        $codigoEndereco = ($corredor !== '' && $galpao !== '' && $prateleira !== '')
+            ? $corredor . '-' . $galpao . '-' . $prateleira
+            : '';
         $novaQtd        = (int) ($_POST['nova_quantidade'] ?? -1);
         $motivo         = $_POST['motivo'] ?? '';
         $obs            = trim($_POST['observacoes'] ?? '');

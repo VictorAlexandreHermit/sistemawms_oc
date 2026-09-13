@@ -109,4 +109,15 @@ final class UsuarioModel
         $stmt = $pdo->prepare('UPDATE usuarios SET senha_hash = :senha_hash WHERE id = :id');
         $stmt->execute([':senha_hash' => password_hash($senha, PASSWORD_BCRYPT), ':id' => $id]);
     }
+
+    /**
+     * Exclusão lógica: a conta deixa de aparecer e de validar logins,
+     * mas o vínculo com registros históricos (avarias, divergências, logs) é preservado.
+     */
+    public static function excluir(int $id): void
+    {
+        $pdo = Database::conexao();
+        $stmt = $pdo->prepare('UPDATE usuarios SET deleted_at = NOW() WHERE id = :id AND deleted_at IS NULL');
+        $stmt->execute([':id' => $id]);
+    }
 }
