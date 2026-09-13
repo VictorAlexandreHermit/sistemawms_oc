@@ -1,0 +1,16 @@
+Options -Indexes
+Options -MultiViews
+
+# Bloqueio de acesso direto a pastas internas
+RewriteEngine On
+RewriteRule ^(config|app|database|uploads|logs)(/|$) - [F,L,NC]
+
+# Força requisições web para o Front Controller único
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php?r=$1 [QSA,L]
+
+# Protege arquivos sensíveis
+<FilesMatch "^(config\.php|database\.php)$">
+    Require all denied
+</FilesMatch>

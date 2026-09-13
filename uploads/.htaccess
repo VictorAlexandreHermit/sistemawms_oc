@@ -1,0 +1,6 @@
+﻿Options -Indexes
+php_flag engine off
+SetHandler default-handler
+<FilesMatch "\.(php|php5|phtml|phar)$">
+    Require all denied
+</FilesMatch>

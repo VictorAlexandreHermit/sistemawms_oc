@@ -1,0 +1,21 @@
+# Logs e arquivos de execução
+logs/
+*.log
+
+# Configuração local (contém credenciais) — use config/config.php.example
+config/config.php
+
+# Uploads de teste (os .htaccess de proteção são mantidos via !)
+uploads/**/*.jpg
+uploads/**/*.jpeg
+uploads/**/*.png
+
+# IDEs e sistema
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Contingência do banco
+*.sql.old

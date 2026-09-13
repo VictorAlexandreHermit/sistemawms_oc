@@ -1,0 +1,92 @@
+<?php
+/**
+ * [Diretório do Projeto - Repositório]/config/config.php.example
+ * MODELO de configuração para instalação. Copie para config/config.php
+ * (no mesmo diretório) e preencha com os dados do seu ambiente:
+ *
+ *     Windows:  copy config\config.php.example config\config.php
+ *     Linux/Mac: cp config/config.php.example config/config.php
+ */
+
+defined('WMS_EXEC') or die('Acesso direto não permitido.');
+
+// Resolve a URL base automaticamente quando executado via servidor web
+if (PHP_SAPI !== 'cli' && isset($_SERVER['HTTP_HOST'])) {
+    $esquema = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $host    = $_SERVER['HTTP_HOST'];
+
+    // Descobre o caminho base (ex.: /wms-agiliza, /Sistema%20WMS%20OC) removendo o nome do script
+    $script  = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '/index.php');
+    $posicao = strrpos($script, '/index.php');
+    if ($posicao !== false && $posicao > 0) {
+        $caminho = substr($script, 0, $posicao);
+    } else {
+        $caminho = '';
+    }
+    $baseUrl = rtrim($esquema . '://' . $host . $caminho, '/');
+} else {
+    $baseUrl = 'http://localhost/wms-agiliza';
+}
+
+define('BASE_URL', $baseUrl);
+define('URL_PUBLICA', $baseUrl);
+
+$configuracao = [
+    'db' => [
+        'host'       => 'localhost',
+        'dbname'     => 'wms_agiliza',
+        'user'       => 'SEU_USUARIO_MYSQL',
+        'pass'       => 'SUA_SENHA_MYSQL',
+        'charset'    => 'utf8mb4',
+    ],
+
+    'app' => [
+        'name'      => 'WMS Agiliza',
+        'base_url'  => $baseUrl,
+        'timezone'  => 'America/Sao_Paulo',
+        'sla_padrao_minutos' => 120,
+        'sessao_inatividade_segundos' => 28800, // 8 horas
+    ],
+
+    'otif' => [
+        'expiracao_dias_uteis' => 10,
+        'upload_max_bytes'     => 5242880, // 5MB
+        'tipos_permitidos'     => ['image/jpeg', 'image/png'],
+    ],
+
+    'sla' => [
+        'RECEBIDO'     => 120,
+        'A_ARMAZENAR'  => 120,
+        'A_SEPARAR'    => 120,
+        'A_EXPEDIR'    => 120,
+    ],
+
+    'motivos_ajuste' => [
+        'DANO_MANUSEIO'      => 'Danos no manuseio',
+        'ERRO_CONTAGEM'      => 'Erro de contagem anterior',
+        'ITEM_AVARIADO'      => 'Item avariado',
+        'PERDA'              => 'Perda no armazenamento',
+        'DIVERGENCIA_NOTAFISCAL' => 'Divergência com nota fiscal',
+        'OUTRO'              => 'Outro motivo informado',
+    ],
+
+    // Disparo automático da pesquisa OTIF
+    'envio' => [
+        // 'simulacao' grava como ENVIADO sem chamar serviço externo.
+        // 'api' envia via Evolution API (WhatsApp) ou Resend (E-mail).
+        'modo' => 'simulacao',
+        'evolution_api' => [
+            'url' => '',       // Ex.: http://localhost:8080/message/sendText
+            'instance' => '',  // Nome da instância Evolution API
+            'api_key' => '',
+        ],
+        'resend' => [
+            'api_key' => '',
+            'from_email' => '',
+        ],
+    ],
+];
+
+$GLOBALS['WMS_CONFIG'] = $configuracao;
+
+return $configuracao;
