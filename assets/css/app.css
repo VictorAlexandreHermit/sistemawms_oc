@@ -1,6 +1,6 @@
 /*
  * WMS Agiliza — Tema "Precision Logistics"
- * Preto com estrelas #000000 | Neutros #9C9C9C/#FFFFFF | Sidebar #EDF5E1
+ * Preto com estrelas #000000 | Neutros #E3E2DF/#FFFFFF | Fontes #1C1C1E em negrito | Sidebar #EDF5E1
  */
 
 /* ============ Tipografia Inter (local) ============ */
@@ -37,11 +37,11 @@
 :root {
     --wms-deep-slate: #000000;
     --wms-deep-slate-light: #111111;
-    --wms-bg: #9C9C9C;
+    --wms-bg: #E3E2DF;
     --wms-surface: #FFFFFF;
     --wms-border: #E2E8F0;
     --wms-border-strong: #CBD5E1;
-    --wms-text: #191C1E;
+    --wms-text: #1C1C1E;
     --wms-text-muted: #475569;
     --wms-primary-blue: #2563EB;
     --wms-success: #16A34A;
@@ -62,6 +62,7 @@ body {
     background-color: var(--wms-bg);
     color: var(--wms-text);
     font-size: 14px;
+    font-weight: 700;
     line-height: 20px;
     -webkit-font-smoothing: antialiased;
 }
