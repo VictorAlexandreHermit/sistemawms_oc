@@ -1,6 +1,8 @@
 ﻿Options -Indexes
-php_flag engine off
-SetHandler default-handler
-<FilesMatch "\.(php|php5|phtml|phar)$">
+
+# Impede a execução de PHP dentro de uploads (compatível com Apache e LiteSpeed)
+<FilesMatch "\.(php|php3|php4|php5|php7|php8|phtml|phar|pl|py|cgi)$">
     Require all denied
 </FilesMatch>
+RemoveHandler .php .php3 .php4 .php5 .php7 .php8 .phtml .phar .pl .py .cgi
+RemoveType .php .php3 .php4 .php5 .php7 .php8 .phtml .phar .pl .py .cgi

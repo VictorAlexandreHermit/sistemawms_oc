@@ -108,7 +108,7 @@ $t = $taxas;
                                 <span class="badge badge-danger-lg">Negativa</span>
                             </div>
                             <div class="small text-secondary">
-                                <?php echo $c['cliente_nome']; ?> · <?php echo SecurityHelper::e(DateHelper::exibirData($c['respondido_em'])); ?>
+                                <?php echo SecurityHelper::e($c['cliente_nome']); ?> · <?php echo SecurityHelper::e(DateHelper::exibirData($c['respondido_em'])); ?>
                             </div>
                             <div class="small mt-1">
                                 <?php if ($c['prazo_cumprido'] === 'NAO'): ?><span class="badge badge-warning-lg me-1">Prazo não cumprido</span><?php endif; ?>

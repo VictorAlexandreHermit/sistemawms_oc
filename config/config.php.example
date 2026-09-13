@@ -12,7 +12,10 @@ defined('WMS_EXEC') or die('Acesso direto não permitido.');
 
 // Resolve a URL base automaticamente quando executado via servidor web
 if (PHP_SAPI !== 'cli' && isset($_SERVER['HTTP_HOST'])) {
-    $esquema = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || strtolower($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https'
+        || strtolower($_SERVER['HTTP_X_FORWARDED_SSL'] ?? '') === 'on';
+    $esquema = $https ? 'https' : 'http';
     $host    = $_SERVER['HTTP_HOST'];
 
     // Descobre o caminho base (ex.: /wms-agiliza, /Sistema%20WMS%20OC) removendo o nome do script

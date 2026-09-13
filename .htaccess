@@ -1,9 +1,10 @@
 Options -Indexes
 Options -MultiViews
 
-# Bloqueio de acesso direto a pastas internas
+# Bloqueio de acesso direto a pastas internas (uploads fica liberado para
+# exibir as fotos de avarias e OTIF; a proteção dele está em uploads/.htaccess)
 RewriteEngine On
-RewriteRule ^(config|app|database|uploads|logs)(/|$) - [F,L,NC]
+RewriteRule ^(config|app|database|logs)(/|$) - [F,L,NC]
 
 # Força requisições web para o Front Controller único
 RewriteCond %{REQUEST_FILENAME} !-f

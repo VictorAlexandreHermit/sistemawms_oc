@@ -46,9 +46,12 @@ date_default_timezone_set($CONFIG['app']['timezone']);
 // =============================================================
 if (session_status() === PHP_SESSION_NONE) {
     session_name('WMSAGILIZA');
+    $httpsAtivo = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || strtolower($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https';
     session_set_cookie_params([
         'httponly' => true,
         'samesite' => 'Lax',
+        'secure'   => $httpsAtivo,
     ]);
     session_start();
 }

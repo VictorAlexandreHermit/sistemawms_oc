@@ -52,8 +52,8 @@ ViewHelper::render('otif/avaliar', [
         $token   = trim($_POST['token'] ?? '');
         $pesquisa = $token !== '' ? PesquisaOtifModel::buscarPorToken($token) : null;
 
-        if ($pesquisa === null) {
-            ViewHelper::render('otif/invalido', ['titulo' => 'Link de avaliação não encontrado']);
+if ($pesquisa === null) {
+            ViewHelper::render('otif/invalido', ['titulo' => 'Link de avaliação não encontrado'], 'externo');
             return;
         }
 
@@ -61,7 +61,7 @@ ViewHelper::render('otif/avaliar', [
             ViewHelper::render('otif/invalido', [
                 'titulo'   => 'Avaliação expirada',
                 'mensagem' => 'O prazo para avaliar esta entrega já foi ultrapassado.',
-            ]);
+            ], 'externo');
             return;
         }
 
