@@ -24,8 +24,8 @@ $rotaBase = explode('/', $rotaAtiva)[0];
 
     <aside class="wms-sidebar">
         <div class="brand">
-            <span class="dot"></span>
-            <span>WMS Agiliza</span>
+            <img class="brand-logo" src="<?php echo BASE_URL; ?>/assets/img/wms_branco.png" alt="WMS Agiliza logo">
+            <span class="brand-text">WMS AGILIZA</span>
         </div>
 
         <div class="nav-section">Operação</div>
@@ -79,6 +79,9 @@ $rotaBase = explode('/', $rotaAtiva)[0];
     </aside>
 
     <main class="wms-content">
+        <div class="print-brand">
+            <img src="<?php echo BASE_URL; ?>/assets/img/wms_preto.png" alt="WMS Agiliza logo">
+        </div>
         <?php if (!empty($titulo)): ?>
             <h1 class="page-title"><?php echo SecurityHelper::e($titulo); ?></h1>
             <?php if (!empty($subtitulo)): ?>

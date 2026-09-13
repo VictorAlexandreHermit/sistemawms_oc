@@ -8,9 +8,9 @@
     <div style="width:100%;max-width:460px">
 
         <div class="wms-card p-4 shadow-sm">
-            <div class="login-logo d-flex align-items-center justify-content-center mb-4">
-                <!-- Área reservada para a logo da empresa. Substituir o texto abaixo por <img ...> quando a logo for fornecida. -->
-                <h1 style="font-size:24px;font-weight:700;margin:0;letter-spacing:-.01em">WMS Agiliza</h1>
+            <div class="login-logo d-flex flex-column align-items-center justify-content-center mb-4">
+                <img src="<?php echo BASE_URL; ?>/assets/img/wms_color.png" alt="WMS Agiliza logo" class="login-logo-img">
+                <span class="login-logo-text">WMS AGILIZA</span>
             </div>
 
             <p class="text-secondary mb-4" style="color:#64748B">

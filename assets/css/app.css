@@ -225,12 +225,17 @@ a { color: var(--wms-deep-slate); }
     letter-spacing: -.01em;
     border-bottom: 1px solid rgba(255,255,255,.14);
 }
-.wms-sidebar .brand .dot {
-    width: 10px;
-    height: 10px;
-    background-color: #EDF5E1;
-    margin: 0;
-    flex-shrink: 0;
+.wms-sidebar .brand .brand-logo {
+    height: 60px;
+    width: auto;
+    display: block;
+    filter: drop-shadow(0 0 18px rgba(255,255,255,.18));
+}
+.wms-sidebar .brand .brand-text {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: .14em;
+    color: #FFFFFF;
 }
 .wms-sidebar .nav-section {
     font-size: 11px;
@@ -441,9 +446,21 @@ a { color: var(--wms-deep-slate); }
     justify-content: center;
     padding: 1.5rem;
 }
-.login-logo h1 {
+.login-logo-img {
+    max-width: 236px;
+    width: 100%;
+    height: auto;
+    display: block;
+}
+.login-logo-text {
+    margin-top: .6rem;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: .18em;
     color: #1C1C1E;
 }
+
+.print-brand { display: none; }
 
 /* ============ Responsivo ============ */
 @media (max-width: 991px) {
@@ -465,6 +482,15 @@ a { color: var(--wms-deep-slate); }
 @media print {
     .wms-sidebar { display: none; }
     .wms-content { padding: 0; }
+    .print-brand {
+        display: flex;
+        justify-content: flex-start;
+        margin-bottom: 1rem;
+    }
+    .print-brand img {
+        height: 32px;
+        width: auto;
+    }
 }
 
 /* ============ Dashboard Executivo ============ */
