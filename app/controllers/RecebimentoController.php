@@ -17,7 +17,7 @@ final class RecebimentoController
 
         ViewHelper::render('recebimento/index', [
             'titulo'    => 'Recebimento de Mercadorias',
-            'subtitulo' => 'Importe o XML da NF-e e execute a conferência cega por bipagem.',
+            'subtitulo' => 'Importe o XML da NF-e e execute a conferência cega: bipe 1x por produto (embalagem etiquetada).',
             'pendentes' => $pendentes,
         ]);
     }
@@ -137,7 +137,7 @@ final class RecebimentoController
 
         ViewHelper::render('recebimento/conferencia', [
             'titulo'    => 'Conferência Cega',
-            'subtitulo' => 'Nota ' . SecurityHelper::e($pedido['numero_nota_xml']) . ' · ' . SecurityHelper::e($pedido['cliente_nome']) . ' — Não exibimos as quantidades esperadas.',
+            'subtitulo' => 'Nota ' . SecurityHelper::e($pedido['numero_nota_xml']) . ' · ' . SecurityHelper::e($pedido['cliente_nome']) . ' — bipe 1x por produto; não exibimos as quantidades esperadas.',
             'pedido'    => $pedido,
             'itens'     => PedidoModel::itens($pedidoId),
         ]);

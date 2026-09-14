@@ -218,12 +218,22 @@ final class ProdutoModel
         return $id !== null ? $id : (int) $pdo->lastInsertId();
     }
 
+    /**
+     * Exclusão definitiva (soft delete) do produto NO SISTEMA INTEIRO.
+     * Remove também as referências em qualquer processo logístico (itens de
+     * pedidos, divergências, avarias, saldos e auditoria) para o produto
+     * desaparecer do Kanban, Putaway, Separar/Expedir etc. Exclusivo do
+     * Administrador.
+     */
     public static function excluir(int $id): void
     {
         $pdo = Database::conexao();
         $pdo->beginTransaction();
         try {
-            // Zera os saldos e a auditoria do produto para o estoque refletir a exclusão
+            // Zera/remove o produto em todos os fluxos e no estoque
+            $pdo->prepare('DELETE FROM pedido_itens WHERE produto_id = :id')->execute([':id' => $id]);
+            $pdo->prepare('DELETE FROM divergencias_recebimento WHERE produto_id = :id')->execute([':id' => $id]);
+            $pdo->prepare('DELETE FROM avarias WHERE produto_id = :id')->execute([':id' => $id]);
             $pdo->prepare('DELETE FROM estoque_saldos WHERE produto_id = :id')->execute([':id' => $id]);
             $pdo->prepare('DELETE FROM logs_auditoria_estoque WHERE produto_id = :id')->execute([':id' => $id]);
             $stmt = $pdo->prepare('UPDATE produtos SET deleted_at = NOW() WHERE id = :id AND deleted_at IS NULL');

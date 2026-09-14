@@ -31,7 +31,16 @@ $rotulos = [
                 <div class="kanban-card <?php echo SecurityHelper::e($c['sla']['classe']); ?>" data-url="<?php echo BASE_URL . '/' . $urlDoCard[$etapa] . (int) $c['id']; ?>">
                     <div class="card-top">
                         <span class="card-number">Nota <?php echo SecurityHelper::e($c['numero_nota_xml']); ?></span>
-                        <span class="abc-tag abc-<?php echo strtolower(SecurityHelper::e($c['prioridade_abc'])); ?>"><?php echo SecurityHelper::e($c['prioridade_abc']); ?></span>
+                        <span class="d-flex align-items-center gap-2">
+                            <?php if (AuthHelper::ehAdministrador()): ?>
+                            <form method="post" action="<?php echo BASE_URL; ?>/kanban/excluir/<?php echo (int) $c['id']; ?>" class="kanban-excluir"
+                                  onsubmit="return confirm('Excluir definitivamente o processo da nota <?php echo SecurityHelper::e($c['numero_nota_xml']); ?> (<?php echo SecurityHelper::e($c['cliente_nome']); ?>)? Ele sai do Kanban, Guarda, Separação e Expedição.')">
+                                <?php echo CsrfHelper::campo(); ?>
+                                <button type="submit" class="btn btn-link btn-sm text-danger p-0" title="Excluir processo (Administrador)" style="text-decoration:none">✕</button>
+                            </form>
+                            <?php endif; ?>
+                            <span class="abc-tag abc-<?php echo strtolower(SecurityHelper::e($c['prioridade_abc'])); ?>"><?php echo SecurityHelper::e($c['prioridade_abc']); ?></span>
+                        </span>
                     </div>
                     <div class="card-client"><?php echo SecurityHelper::e($c['cliente_nome']); ?></div>
                     <div class="card-meta">

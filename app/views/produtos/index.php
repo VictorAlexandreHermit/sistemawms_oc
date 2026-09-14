@@ -42,11 +42,13 @@
                         <td class="text-center tabular-nums fw-semibold"><?php echo (int) $p['saldo_total']; ?></td>
                         <td class="text-end">
                             <a class="btn btn-outline-slate btn-sm" href="<?php echo BASE_URL; ?>/produtos/editar/<?php echo (int) $p['id']; ?>">Editar</a>
+                            <?php if (AuthHelper::ehAdministrador()): ?>
                             <form method="post" action="<?php echo BASE_URL; ?>/produtos/excluir/<?php echo (int) $p['id']; ?>" class="d-inline"
-                                  onsubmit="return confirm('Excluir o produto <?php echo SecurityHelper::e($p['sku']); ?>?')">
+                                  onsubmit="return confirm('Excluir o produto <?php echo SecurityHelper::e($p['sku']); ?> de TODO o sistema (estoque, kanban, guarda e separação)?')">
                                 <?php echo CsrfHelper::campo(); ?>
                                 <button class="btn btn-link btn-sm text-danger p-0 ms-1">Excluir</button>
                             </form>
+                            <?php endif; ?>
                         </td>
                     </tr>
                     <?php endforeach; ?>

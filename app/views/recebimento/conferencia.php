@@ -4,7 +4,7 @@
  * Conferência Cega: leitura por bipagem USB/manual sem exibir o esperado.
  */
 $totalBipado = 0;
-foreach ($itens as $i) { $totalBipado += (int) $i['quantidade_conferida']; }
+foreach ($itens as $i) { if ((int) $i['quantidade_conferida'] >= (int) $i['quantidade_esperada']) { $totalBipado++; } }
 ?>
 <div class="row g-4">
 
@@ -12,7 +12,7 @@ foreach ($itens as $i) { $totalBipado += (int) $i['quantidade_conferida']; }
         <div class="wms-card p-4">
             <form method="post" action="<?php echo BASE_URL; ?>/recebimento/bipar/<?php echo (int) $pedido['id']; ?>" autocomplete="off">
                 <?php echo CsrfHelper::campo(); ?>
-                <label class="form-label" for="campo_bip">Leia o código de barras (ou digite e pressione Enter)</label>
+                <label class="form-label" for="campo_bip">Leia o código de barras (ou digite e pressione Enter) — 1 leitura por produto</label>
                 <div class="input-group">
                     <input class="form-control bipador form-control-lg" type="text" id="campo_bip" name="codigo"
                            placeholder="Ex.: 7891000010011" autofocus required>
@@ -26,7 +26,7 @@ foreach ($itens as $i) { $totalBipado += (int) $i['quantidade_conferida']; }
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
                 <span class="badge badge-dark-lg" style="padding:.45rem .8rem">
-                    Itens bipados até o momento: <strong class="tabular-nums"><?php echo (int) $totalBipado; ?></strong>
+                    Produtos conferidos: <strong class="tabular-nums"><?php echo (int) $totalBipado; ?></strong>
                 </span>
             </div>
             <form method="post" action="<?php echo BASE_URL; ?>/recebimento/finalizar/<?php echo (int) $pedido['id']; ?>"
@@ -46,25 +46,29 @@ foreach ($itens as $i) { $totalBipado += (int) $i['quantidade_conferida']; }
                                 <th>SKU</th>
                                 <th>Código de barras</th>
                                 <th>Descrição</th>
-                                <th class="text-center">Bipado</th>
+                                <th class="text-center">Situação</th>
                                 <th class="text-end">Ação</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php foreach ($itens as $item): ?>
-                            <tr>
+                            <?php $itemOk = (int) $item['quantidade_conferida'] >= (int) $item['quantidade_esperada']; ?>
+                            <tr class="<?php echo $itemOk ? 'linha-ok' : ''; ?>">
                                 <td class="tabular-nums fw-semibold"><?php echo SecurityHelper::e($item['sku']); ?></td>
                                 <td class="tabular-nums text-secondary"><?php echo SecurityHelper::e($item['codigo_barras']); ?></td>
                                 <td><?php echo SecurityHelper::e($item['descricao']); ?></td>
                                 <td class="text-center">
-                                    <span class="badge badge-neutral-lg tabular-nums"><?php echo (int) $item['quantidade_conferida']; ?></span>
+                                    <span class="badge <?php echo $itemOk ? 'badge-success-lg' : 'badge-neutral-lg'; ?> tabular-nums"><?php echo $itemOk ? 'CONFERIDO' : 'PENDENTE'; ?></span>
                                 </td>
                                 <td class="text-end">
-                                    <form method="post" action="<?php echo BASE_URL; ?>/recebimento/desfazer/<?php echo (int) $pedido['id']; ?>" class="d-inline">
+                                    <?php if ($itemOk): ?>
+                                    <form method="post" action="<?php echo BASE_URL; ?>/recebimento/desfazer/<?php echo (int) $pedido['id']; ?>" class="d-inline"
+                                          onsubmit="return confirm('Desfazer a conferência deste produto?')">
                                         <?php echo CsrfHelper::campo(); ?>
                                         <input type="hidden" name="codigo" value="<?php echo SecurityHelper::e($item['codigo_barras']); ?>">
-                                        <button class="btn btn-sm btn-outline-slate" title="Desfazer uma bipagem">−1</button>
+                                        <button class="btn btn-sm btn-outline-slate" title="Desfazer a conferência deste produto">Desfazer</button>
                                     </form>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                             <?php endforeach; ?>

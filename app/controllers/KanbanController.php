@@ -39,4 +39,24 @@ final class KanbanController
             'limites'   => $limites,
         ]);
     }
+
+    /**
+     * Administrador remove por completo um processo travado no fluxo
+     * (pedido + itens + OTIF + divergências + avarias vinculadas).
+     */
+    public function actionExcluir(int $pedidoId): void
+    {
+        AuthHelper::requirePerfil('ADMINISTRADOR');
+        CsrfHelper::checarRequisicao();
+
+        $pedido = PedidoModel::buscarPorId($pedidoId);
+        if ($pedido === null) {
+            ViewHelper::setFlash('erro', 'Processo não encontrado no fluxo.');
+            Router::redirecionar('kanban');
+        }
+
+        PedidoModel::excluir($pedidoId);
+        ViewHelper::setFlash('sucesso', 'Processo ' . SecurityHelper::e($pedido['numero_nota_xml']) . ' removido de todo o fluxo.');
+        Router::redirecionar('kanban');
+    }
 }

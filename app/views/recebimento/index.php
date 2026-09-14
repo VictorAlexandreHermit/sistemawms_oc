@@ -94,7 +94,7 @@
             <div class="wms-card-header">Dica de operação</div>
             <div class="p-4">
                 <ul class="mb-0 ps-3" style="color:#475569">
-                    <li>Bipe cada item físico com o <strong>leitor USB</strong> (Enter automático).</li>
+                    <li>Bipe <strong>1x por produto</strong> com o leitor USB (Enter automático) — o código da caixa/embalagem confirma o item inteiro.</li>
                     <li>Também é possível digitar o código manualmente no campo de leitura.</li>
                     <li>Produto novo: o sistema gera um <strong>SKU interno</strong> (ex.: <code>WM-000001</code>)
                         que vira o método de busca e endereçamento do item.</li>
@@ -133,6 +133,13 @@
                                     <td><?php echo SecurityHelper::e($p['fornecedor_nome'] ?: '—'); ?></td>
                                     <td class="text-end">
                                         <a class="wms-btn-primary text-decoration-none d-inline-block" href="<?php echo BASE_URL; ?>/recebimento/conferir/<?php echo (int) $p['id']; ?>">Conferir</a>
+                                        <?php if (AuthHelper::ehAdministrador()): ?>
+                                        <form method="post" action="<?php echo BASE_URL; ?>/kanban/excluir/<?php echo (int) $p['id']; ?>" class="d-inline"
+                                              onsubmit="return confirm('Excluir definitivamente o processo da nota <?php echo SecurityHelper::e($p['numero_nota_xml']); ?>?')">
+                                            <?php echo CsrfHelper::campo(); ?>
+                                            <button class="btn btn-link btn-sm text-danger p-0 ms-1" title="Excluir processo (Administrador)" style="text-decoration:none">Excluir</button>
+                                        </form>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                                 <?php endforeach; ?>

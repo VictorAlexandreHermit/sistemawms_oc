@@ -23,7 +23,7 @@ final class SeparacaoController
 
         ViewHelper::render('separacao/index', [
             'titulo'    => 'Separação e Embalagem',
-            'subtitulo' => 'Bipe obrigatório item a item; a expedição só é liberada com 100% da conferência.',
+            'subtitulo' => 'Bipe 1x por produto (embalagem etiquetada); a expedição só é liberada com 100% dos itens conferidos.',
             'aSeparar'  => $aSeparar,
             'aExpedir'  => $aExpedir,
             'entregues' => $entregues,
@@ -49,7 +49,7 @@ final class SeparacaoController
 
         ViewHelper::render('separacao/conferir', [
             'titulo'    => 'Estação de Picking e Packing',
-            'subtitulo' => 'Pedido ' . $pedido['numero_nota_xml'] . ' · ' . $pedido['cliente_nome'] . ' — bipe os itens coletados.',
+            'subtitulo' => 'Pedido ' . $pedido['numero_nota_xml'] . ' · ' . $pedido['cliente_nome'] . ' — bipe 1x por produto coletado (embalagem etiquetada).',
             'pedido'    => $pedido,
             'itens'     => $itens,
             'progresso' => PedidoModel::progressoPicking($pedidoId),
@@ -69,6 +69,28 @@ final class SeparacaoController
 
         $r = PedidoModel::biparPicking($pedidoId, $codigo);
         ViewHelper::setFlash($r['ok'] ? 'sucesso' : 'aviso', $r['mensagem']);
+        Router::redirecionar('separacao/conferir/' . $pedidoId);
+    }
+
+    public function actionDesfazer(int $pedidoId): void
+    {
+        AuthHelper::requireLogin();
+        CsrfHelper::checarRequisicao();
+
+        $codigo = trim($_POST['codigo'] ?? '');
+        if ($codigo === '') {
+            ViewHelper::setFlash('erro', 'Informe o código do produto para desfazer a separação.');
+            Router::redirecionar('separacao/conferir/' . $pedidoId);
+        }
+
+        $produto = ProdutoModel::buscarPorCodigoBarras($codigo);
+        if ($produto === null) {
+            ViewHelper::setFlash('erro', 'Produto não encontrado.');
+            Router::redirecionar('separacao/conferir/' . $pedidoId);
+        }
+
+        PedidoModel::desfazerPicking($pedidoId, (int) $produto['id']);
+        ViewHelper::setFlash('aviso', 'Separação desfeita para este produto.');
         Router::redirecionar('separacao/conferir/' . $pedidoId);
     }
 

@@ -35,6 +35,13 @@
                                     </td>
                                     <td>
                                         <a class="btn btn-outline-slate btn-sm" href="<?php echo BASE_URL; ?>/separacao/conferir/<?php echo (int) $p['id']; ?>">Conferir Picking</a>
+                                        <?php if (AuthHelper::ehAdministrador()): ?>
+                                        <form method="post" action="<?php echo BASE_URL; ?>/kanban/excluir/<?php echo (int) $p['id']; ?>" class="d-inline"
+                                              onsubmit="return confirm('Excluir definitivamente o processo da nota <?php echo SecurityHelper::e($p['numero_nota_xml']); ?>?')">
+                                            <?php echo CsrfHelper::campo(); ?>
+                                            <button class="btn btn-link btn-sm text-danger p-0 ms-1" title="Excluir processo (Administrador)" style="text-decoration:none">Excluir</button>
+                                        </form>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                                 <?php endforeach; ?>
@@ -82,6 +89,13 @@
                                             <?php echo CsrfHelper::campo(); ?>
                                             <button class="btn btn-dark btn-sm">Entregar &amp; Disparar OTIF</button>
                                         </form>
+                                        <?php if (AuthHelper::ehAdministrador()): ?>
+                                        <form method="post" action="<?php echo BASE_URL; ?>/kanban/excluir/<?php echo (int) $p['id']; ?>" class="d-inline"
+                                              onsubmit="return confirm('Excluir definitivamente o processo da nota <?php echo SecurityHelper::e($p['numero_nota_xml']); ?>?')">
+                                            <?php echo CsrfHelper::campo(); ?>
+                                            <button class="btn btn-link btn-sm text-danger p-0 ms-1" title="Excluir processo (Administrador)" style="text-decoration:none">Excluir</button>
+                                        </form>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                                 <?php endforeach; ?>

@@ -303,7 +303,10 @@ final class PedidoModel
     }
 
     /**
-     * Incrementa a quantidade conferida (bipagem USB/manual) de um item.
+     * Registra a bipagem de conferência do Recebimento por PRODUTO:
+     * 1 leitura de código de barras já confirma o item inteiro da nota
+     * (a unidade de carga vem etiquetada com o código na embalagem/caixa),
+     * eliminando a necessidade de bipar unidade por unidade.
      *
      * @return array ['ok' => bool, 'mensagem' => string, 'item' => ?array]
      */
@@ -323,14 +326,19 @@ final class PedidoModel
             return ['ok' => false, 'mensagem' => 'Código bipado não pertence a esta carga (nota fiscal).', 'item' => null];
         }
 
+        if ((int) $item['quantidade_conferida'] >= (int) $item['quantidade_esperada']) {
+            return ['ok' => false, 'mensagem' => 'Este produto já foi conferido na carga.', 'item' => $item];
+        }
+
         $up = $pdo->prepare('UPDATE pedido_itens
-                             SET quantidade_conferida = quantidade_conferida + 1,
-                                 status_conferencia = "CONFERENCIA_EM_ANDAMENTO"
+                             SET quantidade_conferida = quantidade_esperada,
+                                 status_conferencia = "CONFERIDO"
                              WHERE id = :id');
         $up->execute([':id' => $item['id']]);
 
-        $item['quantidade_conferida']++;
-        return ['ok' => true, 'mensagem' => 'Bipagem registrada.', 'item' => $item];
+        $item['quantidade_conferida'] = (int) $item['quantidade_esperada'];
+        $item['status_conferencia'] = 'CONFERIDO';
+        return ['ok' => true, 'mensagem' => 'Produto conferido com 1 leitura (embalagem etiquetada).', 'item' => $item];
     }
 
     /**
@@ -385,7 +393,8 @@ final class PedidoModel
             return;
         }
         $up = $pdo->prepare('UPDATE pedido_itens
-                             SET quantidade_conferida = quantidade_conferida - 1
+                             SET quantidade_conferida = 0,
+                                 status_conferencia = "PENDENTE"
                              WHERE id = :id');
         $up->execute([':id' => $item['id']]);
     }
@@ -458,7 +467,9 @@ final class PedidoModel
     }
 
     /**
-     * Incrementa a bipagem de picking/packing de um item do pedido.
+     * Registra a bipagem de picking/packing por PRODUTO: 1 leitura do código
+     * de barras já confirma o item inteiro (a unidade de carga vem etiquetada
+     * com o código na embalagem/caixa), eliminando a bipagem unidade a unidade.
      */
     public static function biparPicking(int $pedidoId, string $codigo): array
     {
@@ -480,20 +491,20 @@ final class PedidoModel
         $bipado   = (int) $item['quantidade_bipada_picking'];
 
         if ($bipado >= $esperado) {
-            return ['ok' => false, 'mensagem' => 'Este item já atingiu a quantidade esperada do pedido.', 'item' => $item, 'completo' => false];
+            return ['ok' => false, 'mensagem' => 'Este produto já foi separado no pedido.', 'item' => $item, 'completo' => false];
         }
 
-        $novo = $bipado + 1;
-        $status = $novo >= $esperado ? 'PICKING_COMPLETO' : 'PICKING_PARCIAL';
+        $novo = $esperado;
         $up = $pdo->prepare('UPDATE pedido_itens
-                             SET quantidade_bipada_picking = :qtd, status_conferencia = :status
+                             SET quantidade_bipada_picking = :qtd, status_conferencia = "PICKING_COMPLETO"
                              WHERE id = :id');
-        $up->execute([':qtd' => $novo, ':status' => $status, ':id' => $item['id']]);
+        $up->execute([':qtd' => $novo, ':id' => $item['id']]);
 
         $item['quantidade_bipada_picking'] = $novo;
+        $item['status_conferencia'] = 'PICKING_COMPLETO';
         $completo = self::pickingCompleto($pedidoId);
 
-        return ['ok' => true, 'mensagem' => 'Bipagem de picking registrada.', 'item' => $item, 'completo' => $completo];
+        return ['ok' => true, 'mensagem' => 'Produto separado com 1 leitura (embalagem etiquetada).', 'item' => $item, 'completo' => $completo];
     }
 
     public static function pickingCompleto(int $pedidoId): bool
@@ -507,14 +518,34 @@ final class PedidoModel
         return true;
     }
 
+    /**
+     * Desfaz a bipagem de picking de um produto (volta o item a pendente).
+     */
+    public static function desfazerPicking(int $pedidoId, int $produtoId): void
+    {
+        $pdo = Database::conexao();
+        $stmt = $pdo->prepare('SELECT * FROM pedido_itens WHERE pedido_id = :pedido AND produto_id = :produto LIMIT 1');
+        $stmt->execute([':pedido' => $pedidoId, ':produto' => $produtoId]);
+        $item = $stmt->fetch();
+        if ($item === false || (int) $item['quantidade_bipada_picking'] <= 0) {
+            return;
+        }
+        $up = $pdo->prepare('UPDATE pedido_itens
+                             SET quantidade_bipada_picking = 0,
+                                 status_conferencia = "PENDENTE"
+                             WHERE id = :id');
+        $up->execute([':id' => $item['id']]);
+    }
+
     public static function progressoPicking(int $pedidoId): array
     {
         $itens = self::itens($pedidoId);
-        $esperados = 0;
+        $esperados = count($itens);
         $bipados   = 0;
         foreach ($itens as $item) {
-            $esperados += (int) $item['quantidade_esperada'];
-            $bipados   += (int) $item['quantidade_bipada_picking'];
+            if ((int) $item['quantidade_bipada_picking'] >= (int) $item['quantidade_esperada']) {
+                $bipados++;
+            }
         }
         return [
             'esperados' => $esperados,
@@ -559,6 +590,28 @@ final class PedidoModel
             'mensagem'   => 'Pedido entregue. ' . ($otifOk ? 'Link de avaliação OTIF disparado.' : 'Falha no disparo OTIF (verifique a fila).'),
             'otif_ok'    => $otifOk,
         ];
+    }
+
+    /**
+     * Remove por completo um pedido do fluxo (kanban/filas) e todos os seus
+     * registros dependentes (OTIF, divergências, avarias e itens em cascata).
+     * Uso exclusivo do Administrador (processo inválido travado no fluxo).
+     */
+    public static function excluir(int $pedidoId): void
+    {
+        $pdo = Database::conexao();
+        $pdo->beginTransaction();
+        try {
+            $pdo->prepare('DELETE FROM pesquisas_otif WHERE pedido_id = :id')->execute([':id' => $pedidoId]);
+            $pdo->prepare('DELETE FROM divergencias_recebimento WHERE pedido_id = :id')->execute([':id' => $pedidoId]);
+            $pdo->prepare('DELETE FROM avarias WHERE pedido_id = :id')->execute([':id' => $pedidoId]);
+            $pdo->prepare('DELETE FROM pedidos WHERE id = :id')->execute([':id' => $pedidoId]);
+            $pdo->commit();
+        } catch (\Throwable $e) {
+            $pdo->rollBack();
+            LogHelper::registrarErro($e);
+            throw new RuntimeException('Não foi possível excluir o processo.');
+        }
     }
 
     public static function conferenciaPendente(int $pedidoId): bool

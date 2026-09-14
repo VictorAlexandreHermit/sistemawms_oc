@@ -533,19 +533,46 @@ a { color: var(--wms-deep-slate); }
 .print-brand { display: none; }
 
 /* ============ Responsivo ============ */
+/* Mobile: o menu vira uma barra horizontal (itens lado a lado, rolável),
+   fixa no topo — sem quebrar o cabeçalho. */
 @media (max-width: 991px) {
     .wms-layout { flex-direction: column; }
     .wms-sidebar {
         width: 100%;
         height: auto;
-        position: relative;
-        flex-direction: row;
-        align-items: center;
-        overflow-x: auto;
+        position: sticky;
+        top: 0;
+        flex-direction: column;
+        align-items: stretch;
+        overflow: hidden;
+        padding-bottom: 0;
     }
+    .wms-sidebar .brand {
+        flex-shrink: 0;
+        padding: .55rem 1rem;
+        border-bottom: 0;
+    }
+    .wms-sidebar .brand .brand-logo { height: 42px; }
+    .wms-sidebar .brand .brand-text { font-size: 15px; letter-spacing: .12em; }
     .wms-sidebar .nav-section, .wms-sidebar .sidebar-footer { display: none; }
-    .wms-sidebar .nav-item { border-left: 0; border-bottom: 3px solid transparent; white-space: nowrap; padding: .9rem 1rem; }
-    .wms-sidebar .wms-nav { flex: 0 0 auto; overflow-y: visible; padding-bottom: 0; }
+    .wms-sidebar .wms-nav {
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding-bottom: 0;
+        border-top: 1px solid rgba(255,255,255,.14);
+        -webkit-overflow-scrolling: touch;
+    }
+    .wms-sidebar .nav-item {
+        flex: 0 0 auto;
+        border-left: 0;
+        border-bottom: 3px solid transparent;
+        white-space: nowrap;
+        padding: .75rem 1rem;
+    }
     .wms-sidebar .nav-item.active { border-bottom-color: #2563EB; }
     .wms-content { padding: 1.25rem 16px; }
 }

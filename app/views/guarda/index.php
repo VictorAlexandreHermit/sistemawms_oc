@@ -18,7 +18,16 @@
             <div class="wms-card">
                 <div class="wms-card-header d-flex justify-content-between">
                     <span>Nota <?php echo SecurityHelper::e($carga['numero_nota_xml']); ?></span>
-                    <span class="badge badge-info-lg"><?php echo count($d['pendentes']); ?> pendente(s)</span>
+                    <span class="d-flex align-items-center gap-2">
+                        <span class="badge badge-info-lg"><?php echo count($d['pendentes']); ?> pendente(s)</span>
+                        <?php if (AuthHelper::ehAdministrador()): ?>
+                        <form method="post" action="<?php echo BASE_URL; ?>/kanban/excluir/<?php echo (int) $carga['id']; ?>"
+                              onsubmit="return confirm('Excluir definitivamente o processo da nota <?php echo SecurityHelper::e($carga['numero_nota_xml']); ?>?')">
+                            <?php echo CsrfHelper::campo(); ?>
+                            <button class="btn btn-link btn-sm text-danger p-0" title="Excluir processo (Administrador)" style="text-decoration:none">Excluir</button>
+                        </form>
+                        <?php endif; ?>
+                    </span>
                 </div>
                 <div class="p-4">
                     <p class="mb-1 fw-semibold"><?php echo SecurityHelper::e($carga['cliente_nome']); ?></p>

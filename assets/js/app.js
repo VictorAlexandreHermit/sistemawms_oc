@@ -71,10 +71,17 @@
 
     // =============================================================
     // Cards do Kanban: clique navega para a página de ação
+    // (o botão de exclusão do Administrador NÃO pode disparar a navegação)
     // =============================================================
     document.querySelectorAll('.kanban-card[data-url]').forEach(function (card) {
         card.addEventListener('click', function () {
             window.location = card.getAttribute('data-url');
+        });
+    });
+
+    document.querySelectorAll('.kanban-card form.kanban-excluir').forEach(function (form) {
+        form.addEventListener('click', function (event) {
+            event.stopPropagation();
         });
     });
 

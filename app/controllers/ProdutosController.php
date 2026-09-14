@@ -97,10 +97,10 @@ final class ProdutosController
 
     public function actionExcluir(int $id): void
     {
-        AuthHelper::requireLogin();
+        AuthHelper::requirePerfil('ADMINISTRADOR');
         CsrfHelper::checarRequisicao();
         ProdutoModel::excluir($id);
-        ViewHelper::setFlash('sucesso', 'Produto removido (soft delete).');
+        ViewHelper::setFlash('sucesso', 'Produto removido (soft delete) de todo o sistema (estoque, kanban, guarda e separação).');
         Router::redirecionar('produtos');
     }
 

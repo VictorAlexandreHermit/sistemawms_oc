@@ -8,7 +8,7 @@ $pct = (float) $progresso['percentual'];
 <div class="mb-4">
     <div class="d-flex justify-content-between align-items-center mb-1">
         <span class="fw-semibold">Progresso da conferência</span>
-        <span class="tabular-nums fw-semibold"><?php echo (int) $progresso['bipados']; ?>/<?php echo (int) $progresso['esperados']; ?> un. (<?php echo $pct; ?>%)</span>
+        <span class="tabular-nums fw-semibold"><?php echo (int) $progresso['bipados']; ?>/<?php echo (int) $progresso['esperados']; ?> itens (<?php echo $pct; ?>%)</span>
     </div>
     <div class="progress-bar-atv" style="height:10px">
         <div style="width:<?php echo $pct; ?>%"></div>
@@ -24,7 +24,7 @@ $pct = (float) $progresso['percentual'];
 
             <form method="post" action="<?php echo BASE_URL; ?>/separacao/bipar/<?php echo (int) $pedido['id']; ?>" autocomplete="off">
                 <?php echo CsrfHelper::campo(); ?>
-                <label class="form-label">Leia o código do item coletado</label>
+                <label class="form-label">Leia o código do item coletado (1x por produto)</label>
                 <input class="form-control bipador" type="text" name="codigo"
                        placeholder="Código de barras" autofocus required>
                 <button type="submit" class="wms-btn-primary w-100 mt-3">Registrar Bipagem</button>
@@ -59,6 +59,7 @@ $pct = (float) $progresso['percentual'];
                                 <th class="text-center">Bipado</th>
                                 <th>Localização (endereço &rarr; saldo)</th>
                                 <th>Status</th>
+                                <th class="text-end">Ação</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -87,6 +88,16 @@ $pct = (float) $progresso['percentual'];
                                         <span class="badge badge-warning-lg">PARCIAL</span>
                                     <?php else: ?>
                                         <span class="badge badge-neutral-lg">AGUARDANDO</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td class="text-end">
+                                    <?php if ($bipado > 0): ?>
+                                    <form method="post" action="<?php echo BASE_URL; ?>/separacao/desfazer/<?php echo (int) $pedido['id']; ?>" class="d-inline"
+                                          onsubmit="return confirm('Desfazer a separação deste produto?')">
+                                        <?php echo CsrfHelper::campo(); ?>
+                                        <input type="hidden" name="codigo" value="<?php echo SecurityHelper::e($item['codigo_barras']); ?>">
+                                        <button class="btn btn-sm btn-outline-slate" title="Desfazer a bipagem deste produto">Desfazer</button>
+                                    </form>
                                     <?php endif; ?>
                                 </td>
                             </tr>
