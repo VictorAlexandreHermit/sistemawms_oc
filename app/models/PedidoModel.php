@@ -9,11 +9,33 @@ defined('WMS_EXEC') or die('Acesso direto não permitido.');
 final class PedidoModel
 {
     public const STATUS_TRANSICOES = [
+        // Recebimento (inbound): conferência -> guarda -> repouso (armazenado)
         'RECEBIDO'     => 'A_ARMAZENAR',
-        'A_ARMAZENAR'  => 'A_SEPARAR',
-        'A_SEPARAR'    => 'A_EXPEDIR',
-        'A_EXPEDIR'    => 'ENTREGUE',
+        'A_ARMAZENAR'  => 'ARMAZENADO',
+        // Venda (outbound): picking -> packing -> expedição -> rota -> entrega
+        'A_SEPARAR'    => 'A_EMBALAR',
+        'A_EMBALAR'    => 'A_EXPEDIR',
+        'A_EXPEDIR'    => 'EM_TRANSITO',
+        'EM_TRANSITO'  => 'ENTREGUE',
     ];
+
+    public const STATUS_PIPELINE = [
+        'RECEBIDO', 'A_ARMAZENAR', 'ARMAZENADO', 'A_SEPARAR', 'A_EMBALAR', 'A_EXPEDIR', 'EM_TRANSITO',
+    ];
+
+    public static function rotuloStatus(string $status): string
+    {
+        return [
+            'RECEBIDO'     => 'Recebido',
+            'A_ARMAZENAR'  => 'A Armazenar',
+            'ARMAZENADO'   => 'Armazenado',
+            'A_SEPARAR'    => 'A Separar',
+            'A_EMBALAR'    => 'A Embalar',
+            'A_EXPEDIR'    => 'A Expedir',
+            'EM_TRANSITO'  => 'Em trânsito',
+            'ENTREGUE'     => 'Entregue',
+        ][$status] ?? $status;
+    }
 
     public static function buscarPorId(int $id): ?array
     {
@@ -44,9 +66,9 @@ final class PedidoModel
             $chave = $xml['chave_nfe'] !== '' ? $xml['chave_nfe'] : SecurityHelper::tokenAleatorio(22);
             $token = SecurityHelper::tokenAleatorio(32);
 
-            $sql = 'INSERT INTO pedidos (numero_nota_xml, chave_nfe, fornecedor_nome, cliente_nome, cliente_contato,
+            $sql = 'INSERT INTO pedidos (tipo, numero_nota_xml, chave_nfe, fornecedor_nome, cliente_nome, cliente_contato,
                                          status_kanban, prioridade_abc, token_otif)
-                    VALUES (:nota, :chave, :fornecedor, :cliente, :contato, :status, :prioridade, :token)';
+                    VALUES ("RECEBIMENTO", :nota, :chave, :fornecedor, :cliente, :contato, :status, :prioridade, :token)';
             $stmt = $pdo->prepare($sql);
             $stmt->execute([
                 ':nota'      => mb_substr($xml['numero_nota'], 0, 50),
@@ -119,9 +141,9 @@ final class PedidoModel
             $token = SecurityHelper::tokenAleatorio(32);
             $nota  = 'MAN-' . date('Ymd-His');
 
-            $sql = 'INSERT INTO pedidos (numero_nota_xml, chave_nfe, fornecedor_nome, cliente_nome,
+            $sql = 'INSERT INTO pedidos (tipo, numero_nota_xml, chave_nfe, fornecedor_nome, cliente_nome,
                                          status_kanban, prioridade_abc, token_otif)
-                    VALUES (:nota, :chave, :fornecedor, :cliente, :status, :prioridade, :token)';
+                    VALUES ("RECEBIMENTO", :nota, :chave, :fornecedor, :cliente, :status, :prioridade, :token)';
             $stmt = $pdo->prepare($sql);
             $stmt->execute([
                 ':nota'       => mb_substr($nota, 0, 50),
@@ -202,7 +224,7 @@ final class PedidoModel
         $pdo = Database::conexao();
         $sql = 'SELECT * FROM pedidos
                 WHERE status_kanban <> "ENTREGUE"
-                ORDER BY FIELD(status_kanban, "RECEBIDO", "A_ARMAZENAR", "A_SEPARAR", "A_EXPEDIR"),
+                ORDER BY FIELD(status_kanban, "RECEBIDO", "A_ARMAZENAR", "ARMAZENADO", "A_SEPARAR", "A_EMBALAR", "A_EXPEDIR", "EM_TRANSITO"),
                          FIELD(prioridade_abc, "A", "B", "C"),
                          ts_recebido ASC';
         return $pdo->query($sql)->fetchAll();
@@ -279,9 +301,14 @@ final class PedidoModel
 
     /**
      * Classifica o estado de SLA do card (ok / atencao / atrasado).
+     * Mercadorias ARMAZENADO ficam em repouso (sem cronômetro de sla).
      */
     public static function classificarSla(array $pedido): array
     {
+        if (($pedido['status_kanban'] ?? '') === 'ARMAZENADO') {
+            return ['classe' => 'ok', 'minutos' => 0, 'limite' => 0, 'porcentagem' => 0];
+        }
+
         $limite = ConfigSlaModel::limiteDaEtapa($pedido['status_kanban']);
         $decorrido = self::minutosNaEtapa($pedido);
         $porcentagem = $limite > 0 ? ($decorrido / $limite) * 100 : 0;
@@ -452,11 +479,13 @@ final class PedidoModel
             return ['ok' => false, 'mensagem' => 'Não foi possível registrar a guarda.', 'concluido' => false];
         }
 
-        // Se todos os itens estiverem guardados, avança para A_SEPARAR
+        // Se todos os itens estiverem guardados, a carga passa a repouso
+        // (ARMAZENADO): o produto fica em estoque no endereço físico e só sai
+        // quando um Pedido de Venda (aba Pedidos) o direciona ao Picking.
         $restantes = self::itensPendentesDeGuarda($pedidoId);
         $concluido = empty($restantes);
         if ($concluido) {
-            self::alterarStatus($pedidoId, 'A_SEPARAR');
+            self::alterarStatus($pedidoId, 'ARMAZENADO');
         }
 
         return [
@@ -555,40 +584,208 @@ final class PedidoModel
     }
 
     /**
-     * Conclui a embalagem e libera a expedição (A_SEPARAR -> A_EXPEDIR).
+     * Cria um PEDIDO DE VENDA simulado (aba Pedidos) que alimenta o Picking.
+     * Só aceita produtos com saldo DISPONIVEL suficiente. O pedido nasce em
+     * A_SEPARAR e só assim a mercadoria entra no fluxo de separação.
+     *
+     * @param array  $itens    [ ['produto_id' => int, 'quantidade' => int], ... ]
+     * @param string $cliente  Nome do cliente destinatário do pedido.
+     * @param string $contato  Contato do cliente (telefone/e-mail, opcional).
+     *
+     * @return int ID do pedido de venda criado.
      */
-    public static function concluirEmbalagem(int $pedidoId): array
+    public static function criarVenda(array $itens, string $cliente, string $contato = ''): int
+    {
+        $cliente = trim($cliente);
+        if ($cliente === '') {
+            throw new RuntimeException('Informe o nome do cliente do pedido.');
+        }
+
+        $agrupados = [];
+        foreach ($itens as $item) {
+            $produtoId = (int) $item['produto_id'];
+            if ($produtoId <= 0) {
+                continue;
+            }
+            $qtd = max(1, (int) $item['quantidade']);
+            $agrupados[$produtoId] = ($agrupados[$produtoId] ?? 0) + $qtd;
+        }
+
+        if (empty($agrupados)) {
+            throw new RuntimeException('Informe ao menos um item para o pedido.');
+        }
+
+        // Valida saldo disponível antes de abrir o pedido
+        foreach ($agrupados as $produtoId => $qtd) {
+            $saldo = EstoqueModel::saldoTotalDisponivel($produtoId);
+            if ($saldo < $qtd) {
+                $produto = ProdutoModel::buscarPorId($produtoId);
+                $nome = $produto ? $produto['sku'] . ' - ' . $produto['descricao'] : ('#' . $produtoId);
+                throw new RuntimeException(
+                    'Estoque insuficiente para ' . SecurityHelper::e(mb_strimwidth($nome, 0, 60, '…')) .
+                    ' (solicitado ' . $qtd . ', disponível ' . $saldo . ').'
+                );
+            }
+        }
+
+        $pdo = Database::conexao();
+        $pdo->beginTransaction();
+        try {
+            $chave = SecurityHelper::tokenAleatorio(22);
+            $token = SecurityHelper::tokenAleatorio(32);
+            $nota  = 'PDV-' . date('Ymd-His');
+
+            $sql = 'INSERT INTO pedidos (tipo, numero_nota_xml, chave_nfe, fornecedor_nome, cliente_nome,
+                                         cliente_contato, status_kanban, prioridade_abc, token_otif, ts_a_separar)
+                    VALUES ("VENDA", :nota, :chave, "PEDIDO INTERNO", :cliente, :contato,
+                            "A_SEPARAR", "C", :token, NOW())';
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([
+                ':nota'     => mb_substr($nota, 0, 50),
+                ':chave'    => $chave,
+                ':cliente'  => mb_substr($cliente, 0, 100),
+                ':contato'  => mb_substr($contato, 0, 100),
+                ':token'    => $token,
+            ]);
+            $pedidoId = (int) $pdo->lastInsertId();
+
+            $ins = $pdo->prepare('INSERT INTO pedido_itens
+                                  (pedido_id, produto_id, quantidade_esperada, quantidade_conferida, status_conferencia)
+                                  VALUES (:pedido, :produto, :qtd, 0, "PENDENTE")');
+            foreach ($agrupados as $produtoId => $qtd) {
+                $ins->execute([':pedido' => $pedidoId, ':produto' => $produtoId, ':qtd' => $qtd]);
+            }
+
+            self::definirPrioridadeAbc($pedidoId);
+
+            $expiracao = DateHelper::adicionarDiasUteis(DateHelper::agora(), (int) APP_CONFIG['otif']['expiracao_dias_uteis']);
+            $otif = $pdo->prepare('INSERT INTO pesquisas_otif (pedido_id, token_acesso, data_envio, data_expiracao)
+                                   VALUES (:pedido, :token, NULL, :expiracao)');
+            $otif->execute([
+                ':pedido'    => $pedidoId,
+                ':token'     => $token,
+                ':expiracao' => $expiracao->format('Y-m-d H:i:s'),
+            ]);
+
+            $pdo->commit();
+            return $pedidoId;
+        } catch (RuntimeException $e) {
+            $pdo->rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            $pdo->rollBack();
+            LogHelper::registrarErro($e);
+            throw new RuntimeException('Não foi possível abrir o pedido de venda.');
+        }
+    }
+
+    /**
+     * Pedidos de venda abertos para o Picking.
+     */
+    public static function listarVendas(?string $status = null): array
+    {
+        $pdo = Database::conexao();
+        $sql = 'SELECT * FROM pedidos WHERE tipo = "VENDA"';
+        $params = [];
+        if ($status !== null && in_array($status, self::STATUS_PIPELINE, true)) {
+            $sql .= ' AND status_kanban = :s';
+            $params[':s'] = $status;
+        }
+        $sql .= ' ORDER BY FIELD(status_kanban, "A_SEPARAR", "A_EMBALAR", "A_EXPEDIR", "EM_TRANSITO", "ENTREGUE"),
+                         FIELD(prioridade_abc, "A", "B", "C"), ts_a_separar DESC';
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Conclui o PICKING (A_SEPARAR -> A_EMBALAR): confere a bipagem 100% e
+     * BAIXA DO ESTOQUE a quantidade separada, atualizando a acuracidade do
+     * dashboard em tempo real.
+     */
+    public static function concluirPicking(int $pedidoId): array
     {
         $pedido = self::buscarPorId($pedidoId);
         if ($pedido === null || $pedido['status_kanban'] !== 'A_SEPARAR') {
-            return ['ok' => false, 'mensagem' => 'Pedido não está na fase de separação.'];
+            return ['ok' => false, 'mensagem' => 'Pedido não está na fase de separação (Picking).'];
         }
         if (!self::pickingCompleto($pedidoId)) {
             return ['ok' => false, 'mensagem' => 'Bipagem do picking não está 100% concluída.'];
         }
-        self::alterarStatus($pedidoId, 'A_EXPEDIR');
-        return ['ok' => true, 'mensagem' => 'Pedido embalado e liberado para expedição.'];
+
+        $pdo = Database::conexao();
+        $pdo->beginTransaction();
+        try {
+            foreach (self::itens($pedidoId) as $item) {
+                EstoqueModel::baixarProduto((int) $item['produto_id'], (int) $item['quantidade_esperada']);
+            }
+            self::alterarStatus($pedidoId, 'A_EMBALAR');
+            $pdo->commit();
+        } catch (\Throwable $e) {
+            $pdo->rollBack();
+            LogHelper::registrarErro($e);
+            return ['ok' => false, 'mensagem' => $e->getMessage() ?: 'Não foi possível concluir o picking.'];
+        }
+
+        return ['ok' => true, 'mensagem' => 'Picking 100% concluído e estoque baixado. Pedido enviado ao Packing.'];
     }
 
     /**
-     * Expede o pedido (A_EXPEDIR -> ENTREGUE) e dispara o envio OTIF.
+     * Conclui a embalagem/packing (A_EMBALAR -> A_EXPEDIR) e libera a expedição.
      */
-    public static function expedirPedido(int $pedidoId): array
+    public static function concluirEmbalagem(int $pedidoId): array
+    {
+        $pedido = self::buscarPorId($pedidoId);
+        if ($pedido === null || $pedido['status_kanban'] !== 'A_EMBALAR') {
+            return ['ok' => false, 'mensagem' => 'Pedido não está na fase de embalagem (Packing).'];
+        }
+        if (!self::pickingCompleto($pedidoId)) {
+            return ['ok' => false, 'mensagem' => 'Picking não registrado corretamente para este pedido.'];
+        }
+        self::alterarStatus($pedidoId, 'A_EXPEDIR');
+        return ['ok' => true, 'mensagem' => 'Pedido embalado e liberado para a Expedição.'];
+    }
+
+    /**
+     * Inicia a expedição (A_EXPEDIR -> EM_TRANSITO): gera a nota e coloca a
+     * mercadoria em rota — "Mercadoria em Trânsito".
+     */
+    public static function iniciarExpedicao(int $pedidoId, string $transportadora = ''): array
     {
         $pedido = self::buscarPorId($pedidoId);
         if ($pedido === null || $pedido['status_kanban'] !== 'A_EXPEDIR') {
-            return ['ok' => false, 'mensagem' => 'Pedido não está na fase de expedição.'];
+            return ['ok' => false, 'mensagem' => 'Pedido não está na fila de expedição.'];
+        }
+        self::alterarStatus($pedidoId, 'EM_TRANSITO');
+        return [
+            'ok'      => true,
+            'nota'    => $pedido['numero_nota_xml'],
+            'mensagem' => 'Mercadoria em trânsito.',
+        ];
+    }
+
+    /**
+     * Confirma a entrega ao destinatário (EM_TRANSITO -> ENTREGUE) e registra
+     * automaticamente uma avaliação OTIF POSITIVA para o pedido.
+     */
+    public static function confirmarEntrega(int $pedidoId): array
+    {
+        $pedido = self::buscarPorId($pedidoId);
+        if ($pedido === null || $pedido['status_kanban'] !== 'EM_TRANSITO') {
+            return ['ok' => false, 'mensagem' => 'Pedido não está em trânsito.'];
         }
 
         self::alterarStatus($pedidoId, 'ENTREGUE');
         $pedido = self::buscarPorId($pedidoId);
 
-        $otifOk = OtifApiHelper::disparar($pedido);
+        $pesquisa = PesquisaOtifModel::doPedido($pedidoId);
+        if ($pesquisa !== null) {
+            PesquisaOtifModel::registrarAvaliacaoPositiva((int) $pesquisa['id']);
+        }
 
         return [
-            'ok'         => true,
-            'mensagem'   => 'Pedido entregue. ' . ($otifOk ? 'Link de avaliação OTIF disparado.' : 'Falha no disparo OTIF (verifique a fila).'),
-            'otif_ok'    => $otifOk,
+            'ok'       => true,
+            'mensagem' => 'Produto entregue ao destinatário. Avaliação OTIF positiva registrada.',
         ];
     }
 

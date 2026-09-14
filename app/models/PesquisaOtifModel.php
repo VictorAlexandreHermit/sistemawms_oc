@@ -127,6 +127,23 @@ final class PesquisaOtifModel
     }
 
     /**
+     * Registra uma avaliação OTIF POSITIVA automática (100% em dia, sem avaria
+     * e com conformidade de itens). Usada quando a entrega é confirmada pelo
+     * operador ao fim da rota, sem depender da resposta do cliente.
+     */
+    public static function registrarAvaliacaoPositiva(int $pesquisaId): void
+    {
+        $pdo = Database::conexao();
+        $stmt = $pdo->prepare('UPDATE pesquisas_otif
+                               SET prazo_cumprido = "SIM", sem_avaria = "SIM", conformidade_itens = "SIM",
+                                   respondido_em = COALESCE(respondido_em, NOW()),
+                                   status_envio = "ENVIADO",
+                                   data_envio = COALESCE(data_envio, NOW())
+                               WHERE id = :id');
+        $stmt->execute([':id' => $pesquisaId]);
+    }
+
+    /**
      * Marca o status de envio do disparo (PENDENTE/ENVIADO/FALHA).
      */
     public static function registrarStatusEnvio(int $pesquisaId, string $status): void

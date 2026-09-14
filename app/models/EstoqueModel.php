@@ -60,6 +60,61 @@ final class EstoqueModel
     }
 
     /**
+     * Baixa (subtrai) uma quantidade total de um produto do estoque DISPONIVEL,
+     * consumindo os saldos mais antigos primeiro (FIFO por endereço).
+     * Lança exceção se o saldo disponível total for insuficiente.
+     */
+    public static function baixarProduto(int $produtoId, int $quantidade): void
+    {
+        if ($quantidade <= 0) {
+            return;
+        }
+
+        $pdo = Database::conexao();
+        $deveCommitar = !$pdo->inTransaction();
+        if ($deveCommitar) {
+            $pdo->beginTransaction();
+        }
+
+        try {
+            $stmt = $pdo->prepare(
+                'SELECT id, quantidade FROM estoque_saldos
+                 WHERE produto_id = :p AND status_saldo = "DISPONIVEL" AND quantidade > 0
+                 ORDER BY updated_at ASC, id ASC'
+            );
+            $stmt->execute([':p' => $produtoId]);
+            $linhas = $stmt->fetchAll();
+
+            $total = array_sum(array_map(fn(array $l): int => (int) $l['quantidade'], $linhas));
+            if ($total < $quantidade) {
+                throw new RuntimeException('Saldo insuficiente para a expedição do produto.');
+            }
+
+            $restante = $quantidade;
+            foreach ($linhas as $linha) {
+                if ($restante <= 0) {
+                    break;
+                }
+                $daLinha = min((int) $linha['quantidade'], $restante);
+                $up = $pdo->prepare('UPDATE estoque_saldos
+                                     SET quantidade = quantidade - :qtd, updated_at = NOW()
+                                     WHERE id = :id');
+                $up->execute([':qtd' => $daLinha, ':id' => (int) $linha['id']]);
+                $restante -= $daLinha;
+            }
+
+            if ($deveCommitar) {
+                $pdo->commit();
+            }
+        } catch (\Throwable $e) {
+            if ($deveCommitar) {
+                $pdo->rollBack();
+            }
+            throw $e;
+        }
+    }
+
+    /**
      * Transfere saldo entre endereços (ex.: Disponível -> Quarentena).
      */
     public static function transferir(int $produtoId, int $enderecoOrigemId, int $enderecoDestinoId, int $quantidade): void

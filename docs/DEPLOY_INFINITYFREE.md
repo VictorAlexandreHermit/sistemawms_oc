@@ -73,7 +73,7 @@ Antes de começar, confirme que:
    (14 tabelas no total).
 
 > Esse arquivo já cria as tabelas e os dados de exemplo (produtos, endereços
-> C01-C05 x P01-P05, usuários GESTOR01/OPERADOR01/ADMINISTRADOR).
+> A-E x P01-P05, usuários GESTOR01/OPERADOR01/ADMINISTRADOR).
 
 ---
 
@@ -327,7 +327,7 @@ Confirme que tudo funciona NO AR:
 - [ ] Login do Gestor abre o **Dashboard** com os 9 indicadores.
 - [ ] Login do Operador abre o **Kanban**.
 - [ ] Menu **Produtos** lista os 8+ produtos de exemplo.
-- [ ] Menu **Endereços** mostra a grade C01-C05 x P01-P05 (Galpão G01).
+- [ ] Menu **Endereços** mostra a grade A-E x P01-P05 (Galpão G01).
 - [ ] Aba **Avaliar** OTIF funciona (teste um token).
 - [ ] **Uploads**: envie uma foto em avarias; a imagem abre (sem 403). ✔ (corrigido)
 - [ ] Acesso via **https://** funciona sem aviso de conteúdo misto. ✔ (corrigido)

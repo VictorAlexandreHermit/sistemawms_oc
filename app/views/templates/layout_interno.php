@@ -16,8 +16,9 @@ $rotaBase = explode('/', $rotaAtiva)[0];
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
     <title><?php echo SecurityHelper::e($titulo ?? 'WMS Agiliza'); ?> · WMS Agiliza</title>
+    <link rel="icon" type="image/png" href="<?php echo BASE_URL; ?>/assets/img/wms_color.png">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/bootstrap.min.css">
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/app.css?v=20260918">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/app.css?v=20260919">
 </head>
 <body>
 <div class="wms-layout">
@@ -60,13 +61,19 @@ $rotaBase = explode('/', $rotaAtiva)[0];
         </a>
         <?php endif; ?>
 
-        <div class="nav-section">Transporte</div>
+        <div class="nav-section">Armazenagem</div>
 
         <a class="nav-item <?php echo $rotaBase === 'guarda' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/guarda">Guarda (Putaway)</a>
 
-        <div class="nav-section">Picking & Packing</div>
+        <div class="nav-section">Vendas</div>
 
-        <a class="nav-item <?php echo $rotaBase === 'separacao' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/separacao">Separação e Embalagem</a>
+        <a class="nav-item <?php echo $rotaBase === 'pedidos' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/pedidos">Pedidos</a>
+
+        <a class="nav-item <?php echo $rotaBase === 'picking' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/picking">Picking</a>
+
+        <a class="nav-item <?php echo $rotaBase === 'packing' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/packing">Packing</a>
+
+        <a class="nav-item <?php echo $rotaBase === 'expedicao' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>/expedicao">Expedição</a>
 
         <div class="nav-section">Geral</div>
 
@@ -110,7 +117,9 @@ $rotaBase = explode('/', $rotaAtiva)[0];
     </main>
 </div>
 
+<div class="relogio-sistema" id="relogio-sistema" data-ts="<?php echo time(); ?>" title="Data e hora (America/Sao_Paulo)">&nbsp;</div>
+
 <script src="<?php echo BASE_URL; ?>/assets/js/bootstrap.bundle.min.js"></script>
-<script src="<?php echo BASE_URL; ?>/assets/js/app.js?v=20260918"></script>
+<script src="<?php echo BASE_URL; ?>/assets/js/app.js?v=20260919"></script>
 </body>
 </html>

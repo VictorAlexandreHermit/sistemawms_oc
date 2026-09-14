@@ -53,22 +53,22 @@
                     <div id="manual-linhas">
                         <div class="manual-linha border rounded p-2 mb-2">
                             <div class="row g-2">
-                                <div class="col-5">
+                                <div class="col-12 col-md-5">
                                     <input class="form-control" type="text" name="codigo_barras[]"
                                            placeholder="Código de barras" required autocomplete="off">
                                 </div>
-                                <div class="col-2">
+                                <div class="col-6 col-md-2">
                                     <input class="form-control" type="number" name="quantidade[]"
                                            value="1" min="1" required>
                                 </div>
-                                <div class="col-3">
+                                <div class="col-6 col-md-3">
                                     <select class="form-select" name="curva_abc[]" required>
                                         <option value="C" selected>Curva C</option>
                                         <option value="B">Curva B</option>
                                         <option value="A">Curva A</option>
                                     </select>
                                 </div>
-                                <div class="col-2 d-flex align-items-center">
+                                <div class="col-12 col-md-2 d-flex align-items-center">
                                     <button type="button" class="btn btn-outline-slate btn-sm btn-remove-linha w-100">Remover</button>
                                 </div>
                             </div>

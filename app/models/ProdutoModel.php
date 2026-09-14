@@ -176,7 +176,7 @@ final class ProdutoModel
         if ($termo !== null && trim($termo) !== '') {
             $sql .= ' AND (sku LIKE :t OR codigo_barras LIKE :t OR descricao LIKE :t)';
         }
-        $sql .= ' ORDER BY curva_abc ASC, sku ASC';
+        $sql .= ' ORDER BY created_at DESC, id DESC';
         $stmt = $pdo->prepare($sql);
         if ($termo !== null && trim($termo) !== '') {
             $stmt->execute([':t' => '%' . $termo . '%']);

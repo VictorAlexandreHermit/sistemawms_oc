@@ -13,6 +13,7 @@ final class GuardaController
         AuthHelper::requireLogin();
 
         $cargas = PedidoModel::listarPorStatus('A_ARMAZENAR');
+        $armazenadas = PedidoModel::listarPorStatus('ARMAZENADO');
 
         $detalhes = [];
         foreach ($cargas as $carga) {
@@ -22,10 +23,24 @@ final class GuardaController
             ];
         }
 
+        $armazenadasDetalhe = [];
+        foreach (array_slice($armazenadas, 0, 6) as $carga) {
+            $itens = [];
+            foreach (PedidoModel::itens((int) $carga['id']) as $item) {
+                $item['localizacoes'] = EstoqueModel::consultarPorProduto($item['codigo_barras']);
+                $itens[] = $item;
+            }
+            $armazenadasDetalhe[] = [
+                'carga' => $carga,
+                'itens' => $itens,
+            ];
+        }
+
         ViewHelper::render('guarda/index', [
             'titulo'    => 'Guarda (Putaway)',
             'subtitulo' => 'Transporte os volumes conferidos até o endereço físico indicado.',
             'detalhes'  => $detalhes,
+            'armazenadas' => $armazenadasDetalhe,
         ]);
     }
 
@@ -92,7 +107,7 @@ final class GuardaController
         $r = PedidoModel::guardarItem($pedidoId, (int) $produto['id'], (int) $endereco['id']);
 
         if ($r['ok'] && $r['concluido']) {
-            ViewHelper::setFlash('sucesso', 'Guarda concluída. Carga liberada para a Separação (A Separar).');
+            ViewHelper::setFlash('sucesso', 'Guarda concluída. Mercadoria armazenada no endereço físico (endereçamento concluído) — sem liberação automática para a separação.');
             Router::redirecionar('guarda');
         } elseif ($r['ok']) {
             ViewHelper::setFlash('sucesso', $r['mensagem']);

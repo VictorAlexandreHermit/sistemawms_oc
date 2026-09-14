@@ -314,13 +314,13 @@ a { color: var(--wms-deep-slate); }
 /* ============ Kanban ============ */
 .kanban {
     display: grid;
-    grid-template-columns: repeat(4, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(235px, 1fr));
     gap: 20px;
     align-items: start;
     overflow-x: auto;
 }
 @media (max-width: 1400px) {
-    .kanban { grid-template-columns: repeat(2, 1fr); }
+    .kanban { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
 }
 @media (max-width: 900px) {
     .kanban { grid-template-columns: 1fr; }
@@ -332,6 +332,17 @@ a { color: var(--wms-deep-slate); }
     min-height: 320px;
     display: flex;
     flex-direction: column;
+}
+.kanban-col-repouso .kanban-col-header {
+    background-color: #E3F0E6;
+    color: #4A7C59;
+    border-bottom-color: #C6E0CB;
+}
+.kanban-card-repouso {
+    background-color: #FBFDFB;
+    border-style: dashed;
+    border-color: #C6E0CB;
+    cursor: default;
 }
 .kanban-col-header {
     padding: .8rem 1rem;
@@ -475,6 +486,41 @@ a { color: var(--wms-deep-slate); }
     font-weight: 700;
     letter-spacing: .18em;
     color: #1C1C1E;
+}
+
+.login-versao {
+    position: fixed;
+    right: 1rem;
+    bottom: .75rem;
+    z-index: 30;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .06em;
+    color: rgba(255,255,255,.5);
+    text-shadow: 0 0 6px rgba(122,162,247,.35), 0 0 14px rgba(122,162,247,.22);
+    user-select: none;
+    pointer-events: none;
+}
+
+/* ============ Relógio do sistema (data e hora · America/Sao_Paulo) ============ */
+.relogio-sistema {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 30;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .04em;
+    font-variant-numeric: tabular-nums;
+    color: rgba(255,255,255,.45);
+    text-shadow: 0 0 6px rgba(122,162,247,.30), 0 0 14px rgba(122,162,247,.18);
+    background: rgba(15,23,42,.35);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 10px;
+    padding: .3rem .65rem;
+    pointer-events: none;
+    user-select: none;
+    white-space: nowrap;
 }
 
 .campo-erro {
@@ -689,4 +735,49 @@ a { color: var(--wms-deep-slate); }
     border-radius: var(--wms-radius);
     padding: .75rem 1rem;
     font-size: 14px;
+}
+
+/* ============ Rota de entrega (Expedição) ============ */
+.rota-pista {
+    position: relative;
+    height: 64px;
+    background:
+        linear-gradient(#DEE1E6, #DEE1E6) 0 100% / 100% 6px no-repeat,
+        repeating-linear-gradient(90deg, transparent 0 26px, #FFFFFF 26px 30px) 0 calc(100% - 3px) / 100% 6px no-repeat;
+    border: 1px solid var(--wms-border);
+    border-radius: var(--wms-radius);
+    overflow: hidden;
+    margin-bottom: .5rem;
+}
+.rota-pista .rota-magico,
+.rota-pista .rota-gps {
+    position: absolute;
+    bottom: 12px;
+    font-size: 22px;
+    line-height: 1;
+    z-index: 1;
+}
+.rota-pista .rota-magico { left: 6px; animation: pisca-entrega 1s steps(2, start) infinite; }
+.rota-pista .rota-gps { right: 6px; }
+.rota-pista .rota-caminhao {
+    position: absolute;
+    bottom: 10px;
+    left: 0;
+    font-size: 26px;
+    line-height: 1;
+    animation: rota-viagem 15s linear forwards;
+}
+@keyframes rota-viagem {
+    from { left: 0; transform: scaleX(1); }
+    to {
+        left: calc(100% - 34px);
+        transform: scaleX(1);
+    }
+}
+@keyframes pisca-entrega {
+    50% { opacity: .35; }
+}
+.rota-card .badge.rota-timer {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: .04em;
 }

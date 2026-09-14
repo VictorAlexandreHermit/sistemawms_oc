@@ -21,10 +21,13 @@
                     <tbody>
                         <?php
                         $descricoes = [
-                            'RECEBIDO'    => 'Da recepção até a conferência concluída',
-                            'A_ARMAZENAR' => 'Do fim da conferência até a guarda física',
-                            'A_SEPARAR'   => 'Do início do picking até a expedição',
-                            'A_EXPEDIR'   => 'Da liberação até a baixa de entrega',
+                            'RECEBIDO'     => 'Da recepção até a conferência concluída',
+                            'A_ARMAZENAR'  => 'Do fim da conferência até a guarda física',
+                            'ARMAZENADO'   => 'Mercadoria em repouso aguardando pedido de venda',
+                            'A_SEPARAR'    => 'Do pedido de venda até a conclusão do picking',
+                            'A_EMBALAR'    => 'Do fim do picking até a conclusão do packing',
+                            'A_EXPEDIR'    => 'Da liberação do packing até a saída do veículo',
+                            'EM_TRANSITO'  => 'Da emissão da nota até a confirmação de entrega',
                         ];
                         ?>
                         <?php foreach ($slas as $sla): ?>

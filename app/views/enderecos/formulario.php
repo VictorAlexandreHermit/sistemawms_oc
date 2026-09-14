@@ -15,7 +15,7 @@ $e = $endereco; // null na criação
                 <div class="col-md-4">
                     <label class="form-label">Corredor *</label>
                     <input class="form-control" type="text" name="corredor" value="<?php echo SecurityHelper::e($e['corredor'] ?? ''); ?>" maxlength="5" required
-                           placeholder="C01">
+                           placeholder="Ex.: A (A a E)">
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Prateleira *</label>

@@ -166,4 +166,57 @@
         });
     }
     initEnderecoCascata();
+
+    // =============================================================
+    // Relógio do sistema (canto inferior direito).
+    // A data/hora é derivada do timestamp enviado pelo servidor
+    // (config timezone America/Sao_Paulo), exibida SEMPRE em horário
+    // de Brasília, independentemente do relógio/máquina do cliente.
+    // =============================================================
+    function iniciarRelogio() {
+        var el = document.getElementById('relogio-sistema');
+        if (!el) return;
+        var ts = parseInt(el.getAttribute('data-ts'), 10);
+        if (isNaN(ts)) ts = Math.floor(Date.now() / 1000);
+        var deslocamento = ts - Math.floor(Date.now() / 1000);
+        var formato = new Intl.DateTimeFormat('pt-BR', {
+            timeZone: 'America/Sao_Paulo',
+            day: '2-digit', month: '2-digit', year: 'numeric',
+            hour: '2-digit', minute: '2-digit', second: '2-digit'
+        });
+        function atualizar() {
+            var agora = new Date((Math.floor(Date.now() / 1000) + deslocamento) * 1000);
+            el.textContent = formato.format(agora);
+        }
+        atualizar();
+        setInterval(atualizar, 1000);
+    }
+    iniciarRelogio();
+
+    // =============================================================
+    // Rota de entrega (Expedição): contagem regressiva de 15s e
+    // confirmação automática da entrega ao destinatário.
+    // =============================================================
+    document.querySelectorAll('.rota-card[data-entregar-s]').forEach(function (card) {
+        var total = parseInt(card.getAttribute('data-entregar-s'), 10);
+        if (isNaN(total) || total < 1) total = 15;
+        var label = card.querySelector('.rota-timer');
+        var form = card.querySelector('form');
+
+        function atualizar() {
+            if (label) label.textContent = 'Entregar em ' + total + 's';
+        }
+        atualizar();
+
+        var intervalo = setInterval(function () {
+            total--;
+            if (total > 0) {
+                atualizar();
+                return;
+            }
+            clearInterval(intervalo);
+            if (label) label.textContent = 'Entregando…';
+            if (form) form.submit();
+        }, 1000);
+    });
 })();

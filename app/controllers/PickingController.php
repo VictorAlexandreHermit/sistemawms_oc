@@ -1,32 +1,28 @@
 <?php
 /**
- * app/controllers/SeparacaoController.php
- * Picking/Packing: validação por bipagem item a item e liberação da expedição.
+ * app/controllers/PickingController.php
+ * Picking (separação): bipagem item a item e baixa de estoque ao concluir.
  */
 
 defined('WMS_EXEC') or die('Acesso direto não permitido.');
 
-final class SeparacaoController
+final class PickingController
 {
     public function actionIndex(): void
     {
         AuthHelper::requireLogin();
 
-        $aSeparar = PedidoModel::listarPorStatus('A_SEPARAR');
-        $aExpedir = PedidoModel::listarPorStatus('A_EXPEDIR');
-        $entregues = PedidoModel::entreguesRecentes();
-
-        foreach ($aSeparar as &$p) { $p['sla'] = PedidoModel::classificarSla($p); }
-        unset($p);
-        foreach ($aExpedir as &$p) { $p['sla'] = PedidoModel::classificarSla($p); }
+        $aSeparar = PedidoModel::listarVendas('A_SEPARAR');
+        foreach ($aSeparar as &$p) {
+            $p['sla'] = PedidoModel::classificarSla($p);
+            $p['itens_count'] = count(PedidoModel::itens((int) $p['id']));
+        }
         unset($p);
 
-        ViewHelper::render('separacao/index', [
-            'titulo'    => 'Separação e Embalagem',
-            'subtitulo' => 'Bipe 1x por produto (embalagem etiquetada); a expedição só é liberada com 100% dos itens conferidos.',
+        ViewHelper::render('picking/index', [
+            'titulo'    => 'Picking (Separação)',
+            'subtitulo' => 'Pedidos de venda aguardando separação. Bipe 1x por produto e conclua para baixar o estoque e enviar ao Packing.',
             'aSeparar'  => $aSeparar,
-            'aExpedir'  => $aExpedir,
-            'entregues' => $entregues,
         ]);
     }
 
@@ -35,20 +31,19 @@ final class SeparacaoController
         AuthHelper::requireLogin();
 
         $pedido = PedidoModel::buscarPorId($pedidoId);
-        if ($pedido === null || !in_array($pedido['status_kanban'], ['A_SEPARAR', 'A_EXPEDIR'], true)) {
-            ViewHelper::setFlash('erro', 'Pedido não disponível para conferência.');
-            Router::redirecionar('separacao');
+        if ($pedido === null || $pedido['status_kanban'] !== 'A_SEPARAR') {
+            ViewHelper::setFlash('erro', 'Pedido não disponível para o Picking.');
+            Router::redirecionar('picking');
         }
 
         $itens = PedidoModel::itens($pedidoId);
-        // Enriquecer cada item com os endereços onde há saldo Disponível
         foreach ($itens as &$item) {
             $item['localizacoes'] = EstoqueModel::consultarPorProduto($item['codigo_barras']);
         }
         unset($item);
 
-        ViewHelper::render('separacao/conferir', [
-            'titulo'    => 'Estação de Picking e Packing',
+        ViewHelper::render('picking/conferir', [
+            'titulo'    => 'Estação de Picking',
             'subtitulo' => 'Pedido ' . $pedido['numero_nota_xml'] . ' · ' . $pedido['cliente_nome'] . ' — bipe 1x por produto coletado (embalagem etiquetada).',
             'pedido'    => $pedido,
             'itens'     => $itens,
@@ -64,12 +59,12 @@ final class SeparacaoController
         $codigo = trim($_POST['codigo'] ?? '');
         if ($codigo === '') {
             ViewHelper::setFlash('erro', 'Leia ou digite um código de barras.');
-            Router::redirecionar('separacao/conferir/' . $pedidoId);
+            Router::redirecionar('picking/conferir/' . $pedidoId);
         }
 
         $r = PedidoModel::biparPicking($pedidoId, $codigo);
         ViewHelper::setFlash($r['ok'] ? 'sucesso' : 'aviso', $r['mensagem']);
-        Router::redirecionar('separacao/conferir/' . $pedidoId);
+        Router::redirecionar('picking/conferir/' . $pedidoId);
     }
 
     public function actionDesfazer(int $pedidoId): void
@@ -80,37 +75,30 @@ final class SeparacaoController
         $codigo = trim($_POST['codigo'] ?? '');
         if ($codigo === '') {
             ViewHelper::setFlash('erro', 'Informe o código do produto para desfazer a separação.');
-            Router::redirecionar('separacao/conferir/' . $pedidoId);
+            Router::redirecionar('picking/conferir/' . $pedidoId);
         }
 
         $produto = ProdutoModel::buscarPorCodigoBarras($codigo);
         if ($produto === null) {
             ViewHelper::setFlash('erro', 'Produto não encontrado.');
-            Router::redirecionar('separacao/conferir/' . $pedidoId);
+            Router::redirecionar('picking/conferir/' . $pedidoId);
         }
 
         PedidoModel::desfazerPicking($pedidoId, (int) $produto['id']);
         ViewHelper::setFlash('aviso', 'Separação desfeita para este produto.');
-        Router::redirecionar('separacao/conferir/' . $pedidoId);
+        Router::redirecionar('picking/conferir/' . $pedidoId);
     }
 
+    /**
+     * Conclui o Picking: baixa o estoque separado e envia o pedido ao Packing.
+     */
     public function actionConcluir(int $pedidoId): void
     {
         AuthHelper::requireLogin();
         CsrfHelper::checarRequisicao();
 
-        $r = PedidoModel::concluirEmbalagem($pedidoId);
+        $r = PedidoModel::concluirPicking($pedidoId);
         ViewHelper::setFlash($r['ok'] ? 'sucesso' : 'erro', $r['mensagem']);
-        Router::redirecionar('separacao');
-    }
-
-    public function actionExpedir(int $pedidoId): void
-    {
-        AuthHelper::requireLogin();
-        CsrfHelper::checarRequisicao();
-
-        $r = PedidoModel::expedirPedido($pedidoId);
-        ViewHelper::setFlash($r['ok'] ? 'sucesso' : 'erro', $r['mensagem']);
-        Router::redirecionar('separacao');
+        Router::redirecionar($r['ok'] ? 'packing' : 'picking/conferir/' . $pedidoId);
     }
 }

@@ -1,13 +1,13 @@
 <?php
 /**
- * app/views/separacao/conferir.php
- * Estação de Picking & Packing com bipagem obrigatória.
+ * app/views/picking/conferir.php
+ * Estação de Picking: bipagem obrigatória e baixa de estoque ao concluir.
  */
 $pct = (float) $progresso['percentual'];
 ?>
 <div class="mb-4">
     <div class="d-flex justify-content-between align-items-center mb-1">
-        <span class="fw-semibold">Progresso da conferência</span>
+        <span class="fw-semibold">Progresso do Picking</span>
         <span class="tabular-nums fw-semibold"><?php echo (int) $progresso['bipados']; ?>/<?php echo (int) $progresso['esperados']; ?> itens (<?php echo $pct; ?>%)</span>
     </div>
     <div class="progress-bar-atv" style="height:10px">
@@ -22,7 +22,7 @@ $pct = (float) $progresso['percentual'];
                 <span class="badge badge-dark-lg">Pedido <?php echo SecurityHelper::e($pedido['numero_nota_xml']); ?></span>
             </div>
 
-            <form method="post" action="<?php echo BASE_URL; ?>/separacao/bipar/<?php echo (int) $pedido['id']; ?>" autocomplete="off">
+            <form method="post" action="<?php echo BASE_URL; ?>/picking/bipar/<?php echo (int) $pedido['id']; ?>" autocomplete="off">
                 <?php echo CsrfHelper::campo(); ?>
                 <label class="form-label">Leia o código do item coletado (1x por produto)</label>
                 <input class="form-control bipador" type="text" name="codigo"
@@ -30,19 +30,15 @@ $pct = (float) $progresso['percentual'];
                 <button type="submit" class="wms-btn-primary w-100 mt-3">Registrar Bipagem</button>
             </form>
 
-            <?php if ($pedido['status_kanban'] === 'A_SEPARAR' && $progresso['bipados'] >= $progresso['esperados'] && $progresso['esperados'] > 0): ?>
-                    <form method="post" action="<?php echo BASE_URL; ?>/separacao/concluir/<?php echo (int) $pedido['id']; ?>"
-                          onsubmit="return confirm('Concluir embalagem e liberar para expedição?')">
-                        <?php echo CsrfHelper::campo(); ?>
-                        <button class="wms-btn-success w-100">Concluir Embalagem &amp; Liberar Expedição</button>
-                    </form>
-                <?php elseif ($pedido['status_kanban'] === 'A_EXPEDIR'): ?>
-                    <div class="alert-info mt-4">
-                        Pedido liberado para expedição — use o botão <strong>Entregar &amp; Disparar OTIF</strong> na fila de separação.
-                    </div>
-                <?php endif; ?>
-                <a class="btn btn-outline-slate mt-4" href="<?php echo BASE_URL; ?>/separacao">Voltar à fila</a>
-            </div>
+            <?php if ($progresso['bipados'] >= $progresso['esperados'] && $progresso['esperados'] > 0): ?>
+                <form method="post" action="<?php echo BASE_URL; ?>/picking/concluir/<?php echo (int) $pedido['id']; ?>"
+                      onsubmit="return confirm('Concluir o Picking? A quantidade separada será BAIXADA DO ESTOQUE e o pedido seguirá para o Packing.')">
+                    <?php echo CsrfHelper::campo(); ?>
+                    <button class="wms-btn-success w-100 mt-3">Concluir Picking &amp; Baixar Estoque</button>
+                </form>
+            <?php endif; ?>
+
+            <a class="btn btn-outline-slate mt-4" href="<?php echo BASE_URL; ?>/picking">Voltar à fila</a>
         </div>
     </div>
 
@@ -55,9 +51,9 @@ $pct = (float) $progresso['percentual'];
                         <thead>
                             <tr>
                                 <th>Produto</th>
-                                <th class="text-center">Esperado</th>
+                                <th class="text-center">Quant.</th>
                                 <th class="text-center">Bipado</th>
-                                <th>Localização (endereço &rarr; saldo)</th>
+                                <th>Localização (endereço → saldo)</th>
                                 <th>Status</th>
                                 <th class="text-end">Ação</th>
                             </tr>
@@ -92,7 +88,7 @@ $pct = (float) $progresso['percentual'];
                                 </td>
                                 <td class="text-end">
                                     <?php if ($bipado > 0): ?>
-                                    <form method="post" action="<?php echo BASE_URL; ?>/separacao/desfazer/<?php echo (int) $pedido['id']; ?>" class="d-inline"
+                                    <form method="post" action="<?php echo BASE_URL; ?>/picking/desfazer/<?php echo (int) $pedido['id']; ?>" class="d-inline"
                                           onsubmit="return confirm('Desfazer a separação deste produto?')">
                                         <?php echo CsrfHelper::campo(); ?>
                                         <input type="hidden" name="codigo" value="<?php echo SecurityHelper::e($item['codigo_barras']); ?>">

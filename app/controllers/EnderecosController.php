@@ -30,7 +30,7 @@ final class EnderecosController
 
         ViewHelper::render('enderecos/index', [
             'titulo'    => 'Endereços do Galpão',
-            'subtitulo' => 'Estrutura Corredor-Galpão-Prateleira · C01-G01-P01 … · capacidade configurável por posição.',
+            'subtitulo' => 'Estrutura Corredor-Galpão-Prateleira · Corredores A-E · Galpão G01 · Prateleiras P01-P05 · capacidade configurável por posição.',
             'enderecos' => $enderecos,
             'termo'     => $termo,
         ]);

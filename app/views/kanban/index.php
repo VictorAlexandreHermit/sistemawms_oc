@@ -1,24 +1,32 @@
 <?php
 /**
  * app/views/kanban/index.php
- * Painel Kanban com 4 colunas, Curva ABC no topo e alertas de SLA.
+ * Quadro operacional: Recebimento/Guarda/Armazenado (inbound) e
+ * Picking/Packing/Expedição/Rota (outbound). Curva ABC no topo e SLA por cor.
  */
 $urlDoCard = [
     'RECEBIDO'    => 'recebimento/conferir/',
     'A_ARMAZENAR' => 'guarda/executar/',
-    'A_SEPARAR'   => 'separacao/conferir/',
-    'A_EXPEDIR'   => 'separacao/conferir/',
+    'ARMAZENADO'  => 'produtos',
+    'A_SEPARAR'   => 'picking/conferir/',
+    'A_EMBALAR'   => 'packing/conferir/',
+    'A_EXPEDIR'   => 'expedicao',
+    'EM_TRANSITO' => 'expedicao',
 ];
 $rotulos = [
-    'RECEBIDO'    => 'Recebido',
-    'A_ARMAZENAR' => 'A Armazenar',
-    'A_SEPARAR'   => 'A Separar',
-    'A_EXPEDIR'   => 'A Expedir',
+    'RECEBIDO'    => PedidoModel::rotuloStatus('RECEBIDO'),
+    'A_ARMAZENAR' => PedidoModel::rotuloStatus('A_ARMAZENAR'),
+    'ARMAZENADO'  => PedidoModel::rotuloStatus('ARMAZENADO'),
+    'A_SEPARAR'   => PedidoModel::rotuloStatus('A_SEPARAR'),
+    'A_EMBALAR'   => PedidoModel::rotuloStatus('A_EMBALAR'),
+    'A_EXPEDIR'   => PedidoModel::rotuloStatus('A_EXPEDIR'),
+    'EM_TRANSITO' => PedidoModel::rotuloStatus('EM_TRANSITO'),
 ];
 ?>
 <div class="kanban">
     <?php foreach ($colunas as $etapa => $cards): ?>
-    <div class="kanban-col">
+    <?php $repouso = in_array($etapa, ['ARMAZENADO', 'EM_TRANSITO'], true); ?>
+    <div class="kanban-col <?php echo $repouso ? 'kanban-col-repouso' : ''; ?>">
         <div class="kanban-col-header">
             <span><?php echo $rotulos[$etapa]; ?></span>
             <span class="badge badge-neutral-lg tabular-nums"><?php echo count($cards); ?></span>
@@ -28,13 +36,18 @@ $rotulos = [
                 <div class="text-center p-4" style="color:#94A3B8;font-size:13px">Sem tarefas</div>
             <?php else: ?>
                 <?php foreach ($cards as $c): ?>
-                <div class="kanban-card <?php echo SecurityHelper::e($c['sla']['classe']); ?>" data-url="<?php echo BASE_URL . '/' . $urlDoCard[$etapa] . (int) $c['id']; ?>">
+                <?php
+                $classeSla = $c['sla']['classe'];
+                $linkCard = $etapa === 'ARMAZENADO' ? $urlDoCard[$etapa] : BASE_URL . '/' . $urlDoCard[$etapa] . (int) $c['id'];
+                ?>
+                <div class="kanban-card <?php echo SecurityHelper::e($classeSla); ?> <?php echo in_array($etapa, ['ARMAZENADO', 'EM_TRANSITO'], true) ? 'kanban-card-repouso' : ''; ?>"
+                     data-url="<?php echo SecurityHelper::e($linkCard); ?>">
                     <div class="card-top">
-                        <span class="card-number">Nota <?php echo SecurityHelper::e($c['numero_nota_xml']); ?></span>
+                        <span class="card-number"><?php echo $etapa === 'ARMAZENADO' ? 'Carga ' : 'Nota '; ?><?php echo SecurityHelper::e($c['numero_nota_xml']); ?></span>
                         <span class="d-flex align-items-center gap-2">
                             <?php if (AuthHelper::ehAdministrador()): ?>
                             <form method="post" action="<?php echo BASE_URL; ?>/kanban/excluir/<?php echo (int) $c['id']; ?>" class="kanban-excluir"
-                                  onsubmit="return confirm('Excluir definitivamente o processo da nota <?php echo SecurityHelper::e($c['numero_nota_xml']); ?> (<?php echo SecurityHelper::e($c['cliente_nome']); ?>)? Ele sai do Kanban, Guarda, Separação e Expedição.')">
+                                  onsubmit="return confirm('Excluir definitivamente o processo da nota <?php echo SecurityHelper::e($c['numero_nota_xml']); ?> (<?php echo SecurityHelper::e($c['cliente_nome']); ?>)? Ele sai do Kanban, Guarda, Picking, Packing e Expedição.')">
                                 <?php echo CsrfHelper::campo(); ?>
                                 <button type="submit" class="btn btn-link btn-sm text-danger p-0" title="Excluir processo (Administrador)" style="text-decoration:none">✕</button>
                             </form>
@@ -45,6 +58,7 @@ $rotulos = [
                     <div class="card-client"><?php echo SecurityHelper::e($c['cliente_nome']); ?></div>
                     <div class="card-meta">
                         <span><?php echo (int) $c['itens_count']; ?> item(ns)</span>
+                        <?php if ($etapa !== 'ARMAZENADO' && $etapa !== 'EM_TRANSITO'): ?>
                         <span class="timer-badge">
                             <?php
                             $h = floor($c['sla']['minutos'] / 60);
@@ -52,11 +66,14 @@ $rotulos = [
                             echo sprintf('%dh%02d', $h, $m);
                             ?>
                         </span>
+                        <?php endif; ?>
                     </div>
+                    <?php if ($etapa !== 'ARMAZENADO' && $etapa !== 'EM_TRANSITO'): ?>
                     <div class="cronometro mt-1 text-secondary" data-inicio-ts="<?php
                         $ts = strtotime($c['ts_' . strtolower($etapa)] ?? date('Y-m-d H:i:s'));
                         echo (int) $ts;
                     ?>" style="font-size:12px"></div>
+                    <?php endif; ?>
                 </div>
                 <?php endforeach; ?>
             <?php endif; ?>

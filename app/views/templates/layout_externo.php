@@ -11,8 +11,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo SecurityHelper::e($titulo ?? 'WMS Agiliza'); ?> · WMS Agiliza</title>
+    <link rel="icon" type="image/png" href="<?php echo BASE_URL; ?>/assets/img/wms_color.png">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/bootstrap.min.css">
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/app.css?v=20260918">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/app.css?v=20260919">
 </head>
 <body>
     <?php echo $conteudo; ?>

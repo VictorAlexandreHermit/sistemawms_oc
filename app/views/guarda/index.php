@@ -54,3 +54,55 @@
         <?php endforeach; ?>
     </div>
 <?php endif; ?>
+
+<?php if (!empty($armazenadas)): ?>
+<div class="wms-card mt-4">
+    <div class="wms-card-header d-flex justify-content-between">
+        <span>Últimas mercadorias armazenadas (endereçadas)</span>
+        <span class="badge badge-success-lg tabular-nums"><?php echo count($armazenadas); ?></span>
+    </div>
+    <div class="p-3">
+        <div class="table-responsive">
+            <table class="table table-wms mb-0">
+                <thead>
+                    <tr>
+                        <th>Carga</th>
+                        <th>Fornecedor</th>
+                        <th>Produto</th>
+                        <th>Endereço de armazenamento → saldo</th>
+                        <th>Armazenado em</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($armazenadas as $a): ?>
+                    <tr>
+                        <td class="tabular-nums fw-semibold"><?php echo SecurityHelper::e($a['carga']['numero_nota_xml']); ?></td>
+                        <td><?php echo SecurityHelper::e($a['carga']['fornecedor_nome'] ?: '—'); ?></td>
+                        <td>
+                            <?php foreach ($a['itens'] as $item): ?>
+                            <div class="tabular-nums">
+                                <strong><?php echo SecurityHelper::e($item['sku']); ?></strong>
+                                <span class="text-secondary"><?php echo SecurityHelper::e(mb_strimwidth($item['descricao'], 0, 34, '…')); ?></span>
+                            </div>
+                            <?php endforeach; ?>
+                        </td>
+                        <td>
+                            <?php foreach ($a['itens'] as $item): ?>
+                                <?php if (!empty($item['localizacoes'])): ?>
+                                    <?php foreach ($item['localizacoes'] as $loc): ?>
+                                    <div><span class="badge badge-success-lg me-1 tabular-nums"><?php echo SecurityHelper::e($loc['endereco_codigo']); ?></span> <?php echo (int) $loc['saldo']; ?> un.</div>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <span class="badge badge-warning-lg">Sem saldo</span>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        </td>
+                        <td class="tabular-nums"><?php echo SecurityHelper::e(DateHelper::exibir($a['carga']['ts_armazenado'] ?? $a['carga']['ts_a_armazenar'])); ?></td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<?php endif; ?>

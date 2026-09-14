@@ -45,12 +45,14 @@ final class DashboardController
 
         // 3) Gargalos de lead time por etapa
         $gargalos = [];
-        foreach (['RECEBIDO', 'A_ARMAZENAR', 'A_SEPARAR', 'A_EXPEDIR'] as $etapa) {
+        foreach (['RECEBIDO', 'A_ARMAZENAR', 'A_SEPARAR', 'A_EMBALAR', 'A_EXPEDIR', 'EM_TRANSITO'] as $etapa) {
             $coluna = [
                 'RECEBIDO'    => 'ts_recebido',
                 'A_ARMAZENAR' => 'ts_a_armazenar',
                 'A_SEPARAR'   => 'ts_a_separar',
+                'A_EMBALAR'   => 'ts_a_embalar',
                 'A_EXPEDIR'   => 'ts_a_expedir',
+                'EM_TRANSITO' => 'ts_em_transito',
             ][$etapa];
             $stmt = $pdo->prepare(
                 'SELECT COUNT(*) AS qtd,
@@ -108,8 +110,8 @@ final class DashboardController
         }
         $enderecadasHoje = $pdo->query(
             'SELECT COUNT(*) AS c FROM pedidos
-             WHERE status_kanban IN ("A_SEPARAR","A_EXPEDIR","ENTREGUE")
-               AND ts_a_separar >= CURDATE()'
+             WHERE status_kanban IN ("ARMAZENADO","A_SEPARAR","A_EMBALAR","A_EXPEDIR","EM_TRANSITO","ENTREGUE")
+               AND ts_armazenado >= CURDATE()'
         )->fetch()['c'];
 
         // 9) Produtos movimentados no dia

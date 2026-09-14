@@ -25,7 +25,7 @@ final class ConfiguracoesController
         AuthHelper::requirePerfil('GESTOR');
         CsrfHelper::checarRequisicao();
 
-        $etapasPermitidas = ['RECEBIDO', 'A_ARMAZENAR', 'A_SEPARAR', 'A_EXPEDIR'];
+        $etapasPermitidas = ['RECEBIDO', 'A_ARMAZENAR', 'ARMAZENADO', 'A_SEPARAR', 'A_EMBALAR', 'A_EXPEDIR', 'EM_TRANSITO'];
         foreach ($etapasPermitidas as $etapa) {
             $horas  = (float) str_replace(',', '.', $_POST['sla_' . $etapa] ?? '0');
             $minutos = (int) round($horas * 60);

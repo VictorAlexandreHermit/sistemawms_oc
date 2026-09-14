@@ -73,8 +73,8 @@ final class EnderecoModel
     }
 
     /**
-     * Primeiro endereço físico com espaço em ordem crescente (ex.: C01-G01-P01).
-     * Quando o corredor 01 está cheio, o próximo livre (ex.: C02) é sugerido.
+     * Primeiro endereço físico com espaço em ordem crescente (ex.: A-G01-P01).
+     * Quando o corredor A está cheio, o próximo livre (ex.: B-G01-P01) é sugerido.
      */
     public static function enderecoSugerido(): ?array
     {

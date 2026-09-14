@@ -26,6 +26,7 @@
                         <th class="text-center">Un.</th>
                         <th class="text-center">Curva</th>
                         <th class="text-center">Saldo disp.</th>
+                        <th>Onde está (endereçamento)</th>
                         <th class="text-end">Ações</th>
                     </tr>
                 </thead>
@@ -40,6 +41,17 @@
                             <span class="abc-tag abc-<?php echo strtolower(SecurityHelper::e($p['curva_abc'])); ?>"><?php echo SecurityHelper::e($p['curva_abc']); ?></span>
                         </td>
                         <td class="text-center tabular-nums fw-semibold"><?php echo (int) $p['saldo_total']; ?></td>
+                        <td>
+                            <?php if (empty($p['localizacoes'])): ?>
+                                <span class="badge badge-neutral-lg">Sem saldo / não endereçado</span>
+                            <?php else: ?>
+                                <?php foreach ($p['localizacoes'] as $loc): ?>
+                                <span class="badge badge-success-lg me-1 tabular-nums" title="Armazenado em <?php echo SecurityHelper::e($loc['endereco_codigo']); ?>">
+                                    <?php echo SecurityHelper::e($loc['endereco_codigo']); ?> · <?php echo (int) $loc['saldo']; ?>
+                                </span>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </td>
                         <td class="text-end">
                             <a class="btn btn-outline-slate btn-sm" href="<?php echo BASE_URL; ?>/produtos/editar/<?php echo (int) $p['id']; ?>">Editar</a>
                             <?php if (AuthHelper::ehAdministrador()): ?>
@@ -53,7 +65,7 @@
                     </tr>
                     <?php endforeach; ?>
                     <?php if (empty($produtos)): ?>
-                    <tr><td colspan="7" class="text-center py-4 text-secondary" style="color:#64748B">Nenhum produto encontrado.</td></tr>
+                    <tr><td colspan="8" class="text-center py-4 text-secondary" style="color:#64748B">Nenhum produto encontrado.</td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>

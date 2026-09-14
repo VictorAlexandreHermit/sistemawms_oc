@@ -8,7 +8,7 @@ defined('WMS_EXEC') or die('Acesso direto não permitido.');
 
 final class KanbanController
 {
-    private const COLUNAS = ['RECEBIDO', 'A_ARMAZENAR', 'A_SEPARAR', 'A_EXPEDIR'];
+    private const COLUNAS = ['RECEBIDO', 'A_ARMAZENAR', 'ARMAZENADO', 'A_SEPARAR', 'A_EMBALAR', 'A_EXPEDIR', 'EM_TRANSITO'];
 
     public function actionIndex(): void
     {
@@ -34,7 +34,7 @@ final class KanbanController
 
         ViewHelper::render('kanban/index', [
             'titulo'    => 'Quadro Operacional (Kanban)',
-            'subtitulo' => 'Recebido → A Armazenar → A Separar → A Expedir · borda amarela aos 80% do SLA, vermelha ao estourar.',
+            'subtitulo' => 'Recebimento → Guarda → Armazenado → Picking → Packing → Expedição → Entrega · borda amarela aos 80% do SLA, vermelha ao estourar.',
             'colunas'   => $colunas,
             'limites'   => $limites,
         ]);

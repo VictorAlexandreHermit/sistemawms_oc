@@ -54,7 +54,8 @@ $prePrateleira = ($enderecoSugerido !== null && $enderecoSugerido['galpao'] === 
      data-sugestao-prateleira="<?php echo SecurityHelper::e($enderecoSugerido['prateleira'] ?? ''); ?>">
     <label class="form-label"><?php echo SecurityHelper::e($rotuloEndereco); ?></label>
     <div class="row g-2">
-        <div class="col-4">
+        <div class="col-12 col-sm-4">
+            <label class="form-label small fw-semibold mb-1">Corredor</label>
             <select class="form-select" name="corredor" data-campo="corredor" required
                     <?php echo $idEndereco !== '' ? 'id="' . SecurityHelper::e($idEndereco) . '"' : ''; ?>>
                 <?php foreach ($corredores as $c): ?>
@@ -64,7 +65,8 @@ $prePrateleira = ($enderecoSugerido !== null && $enderecoSugerido['galpao'] === 
                 <?php endforeach; ?>
             </select>
         </div>
-        <div class="col-4">
+        <div class="col-12 col-sm-4">
+            <label class="form-label small fw-semibold mb-1">Galpão</label>
             <select class="form-select" name="galpao" data-campo="galpao" required>
                 <?php foreach ($gals as $g => $ignorado): ?>
                     <option value="<?php echo SecurityHelper::e($g); ?>"<?php echo $g === $selGalpao ? ' selected' : ''; ?>>
@@ -73,7 +75,8 @@ $prePrateleira = ($enderecoSugerido !== null && $enderecoSugerido['galpao'] === 
                 <?php endforeach; ?>
             </select>
         </div>
-        <div class="col-4">
+        <div class="col-12 col-sm-4">
+            <label class="form-label small fw-semibold mb-1">Prateleira</label>
             <select class="form-select" name="prateleira" data-campo="prateleira" required>
                 <?php foreach ($prats as $p): ?>
                     <option value="<?php echo SecurityHelper::e($p['prateleira']); ?>"

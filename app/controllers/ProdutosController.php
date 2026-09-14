@@ -17,12 +17,13 @@ final class ProdutosController
         $produtos = ProdutoModel::listar($termo !== '' ? $termo : null);
         foreach ($produtos as &$p) {
             $p['saldo_total'] = EstoqueModel::saldoTotalDisponivel((int) $p['id']);
+            $p['localizacoes'] = EstoqueModel::consultarPorProduto($p['codigo_barras']);
         }
         unset($p);
 
         ViewHelper::render('produtos/index', [
             'titulo'    => 'Catálogo de Produtos',
-            'subtitulo' => 'SKU, código de barras, unidade e Curva ABC para a priorização do pick.',
+            'subtitulo' => 'SKU, código de barras, estoque e onde cada mercadoria está armazenada (endereçamento).',
             'produtos'  => $produtos,
             'termo'     => $termo,
         ]);

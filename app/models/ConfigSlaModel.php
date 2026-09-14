@@ -11,7 +11,7 @@ final class ConfigSlaModel
     public static function todos(): array
     {
         $pdo = Database::conexao();
-        return $pdo->query('SELECT * FROM configuracoes_sla ORDER BY FIELD(etapa_kanban, "RECEBIDO", "A_ARMAZENAR", "A_SEPARAR", "A_EXPEDIR")')->fetchAll();
+        return $pdo->query('SELECT * FROM configuracoes_sla ORDER BY FIELD(etapa_kanban, "RECEBIDO", "A_ARMAZENAR", "ARMAZENADO", "A_SEPARAR", "A_EMBALAR", "A_EXPEDIR", "EM_TRANSITO")')->fetchAll();
     }
 
     public static function limiteDaEtapa(string $etapa): int

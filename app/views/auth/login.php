@@ -64,6 +64,8 @@ $login     = $login ?? '';
     </div>
 </div>
 
+<div class="login-versao">v<?php echo SecurityHelper::e(APP_VERSION); ?> · WMS AGILIZA</div>
+
 <script>
 (function () {
     'use strict';
