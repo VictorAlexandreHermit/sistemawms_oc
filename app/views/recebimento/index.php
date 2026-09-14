@@ -35,10 +35,12 @@
             <div class="p-4">
                 <p class="text-secondary" style="color:#475569">
                     Recebimento sem XML: digite ou bipe o (s) código (s) de barras, a quantidade
-                    e a <strong>Curva ABC</strong> de prioridade (A = maior, C = menor). Códigos
-                    novos são cadastrados automaticamente no <strong>Catálogo de Produtos</strong>
-                    com um <strong>SKU interno</strong> gerado pelo sistema. A carga é liberada direto
-                    para a <strong>Guarda (Putaway)</strong>.
+                    e a <strong>Curva ABC</strong> de prioridade (A = maior, C = menor).
+                    O sistema sugere um <strong>SKU interno curto</strong> (ex.: <code>SIS-001</code>) que você
+                    pode manter ou trocar. Mesmo que o <strong>mesmo código de barras</strong> seja recebido
+                    mais de uma vez, cada registro ganha um SKU próprio — a movimentação
+                    (guarda, separação, expedição) sempre usa o <strong>SKU</strong>, que é o código
+                    de barras interno à prova de erro.
                 </p>
 
                 <form method="post" action="<?php echo BASE_URL; ?>/recebimento/entrada-manual" autocomplete="off">
@@ -53,22 +55,30 @@
                     <div id="manual-linhas">
                         <div class="manual-linha border rounded p-2 mb-2">
                             <div class="row g-2">
-                                <div class="col-12 col-md-5">
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label small fw-semibold mb-1">Código de barras</label>
                                     <input class="form-control" type="text" name="codigo_barras[]"
                                            placeholder="Código de barras" required autocomplete="off">
                                 </div>
                                 <div class="col-6 col-md-2">
+                                    <label class="form-label small fw-semibold mb-1">SKU interno</label>
+                                    <input class="form-control" type="text" name="sku[]"
+                                           placeholder="SIS-001" autocomplete="off" data-sku-sugerido>
+                                </div>
+                                <div class="col-6 col-md-2">
+                                    <label class="form-label small fw-semibold mb-1">Quantidade</label>
                                     <input class="form-control" type="number" name="quantidade[]"
                                            value="1" min="1" required>
                                 </div>
-                                <div class="col-6 col-md-3">
+                                <div class="col-6 col-md-2">
+                                    <label class="form-label small fw-semibold mb-1">Curva ABC</label>
                                     <select class="form-select" name="curva_abc[]" required>
                                         <option value="C" selected>Curva C</option>
                                         <option value="B">Curva B</option>
                                         <option value="A">Curva A</option>
                                     </select>
                                 </div>
-                                <div class="col-12 col-md-2 d-flex align-items-center">
+                                <div class="col-6 col-md-2 d-flex align-items-end">
                                     <button type="button" class="btn btn-outline-slate btn-sm btn-remove-linha w-100">Remover</button>
                                 </div>
                             </div>
@@ -96,9 +106,11 @@
                 <ul class="mb-0 ps-3" style="color:#475569">
                     <li>Bipe <strong>1x por produto</strong> com o leitor USB (Enter automático) — o código da caixa/embalagem confirma o item inteiro.</li>
                     <li>Também é possível digitar o código manualmente no campo de leitura.</li>
-                    <li>Produto novo: o sistema gera um <strong>SKU interno</strong> (ex.: <code>WM-000001</code>)
+                    <li>Produto novo: o sistema sugere um <strong>SKU interno</strong> curto (ex.: <code>SIS-001</code>) —
                         que vira o método de busca e endereçamento do item.</li>
-                    <li>O código de barras do fornecedor fica salvo e reutilizado nas próximas entradas.</li>
+                    <li>O <strong>código de barras</strong> do fornecedor pode se repetir; o que não repete é o
+                        <strong>SKU</strong> (SIS-001, SIS-002, …). A partir da <strong>Guarda</strong>, o sistema só aceita
+                        <strong>SKU</strong> na bipagem (Picking, Packing, Expedição, Avarias e Auditoria) para evitar erro.</li>
                     <li>A <strong>Curva ABC</strong> define a prioridade da movimentação no galpão:
                         a carga assume a prioridade do item de maior classe (A).</li>
                 </ul>
@@ -156,6 +168,14 @@
 document.addEventListener('DOMContentLoaded', function () {
     var lista = document.getElementById('manual-linhas');
     var btnAdd = document.getElementById('btn-add-linha');
+    var numeroSku = <?php echo (int) substr((string) ($proximoSku ?? 'SIS-001'), 4); ?>;
+
+    function sugerirSku(campo) {
+        if (campo && campo.value === '') {
+            campo.value = 'SIS-' + String(numeroSku).padStart(3, '0');
+            numeroSku++;
+        }
+    }
     function primeiraLinha() {
         return lista.querySelector('.manual-linha');
     }
@@ -179,8 +199,12 @@ document.addEventListener('DOMContentLoaded', function () {
             clone.querySelectorAll('input').forEach(function (i) { i.value = i.name === 'quantidade[]' ? '1' : ''; });
             clone.querySelectorAll('select').forEach(function (s) { s.value = 'C'; });
             lista.appendChild(clone);
+            sugerirSku(clone.querySelector('[data-sku-sugerido]'));
             removerEvento();
         });
+    }
+    if (lista) {
+        sugerirSku(lista.querySelector('[data-sku-sugerido]'));
     }
     removerEvento();
 });

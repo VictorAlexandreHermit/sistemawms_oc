@@ -12,7 +12,7 @@ foreach ($itens as $i) { if ((int) $i['quantidade_conferida'] >= (int) $i['quant
         <div class="wms-card p-4">
             <form method="post" action="<?php echo BASE_URL; ?>/recebimento/bipar/<?php echo (int) $pedido['id']; ?>" autocomplete="off">
                 <?php echo CsrfHelper::campo(); ?>
-                <label class="form-label" for="campo_bip">Leia o código de barras (ou digite e pressione Enter) — 1 leitura por produto</label>
+                <label class="form-label" for="campo_bip">Leia o código — <strong>código de barras ou SKU</strong> (ex.: SIS-001) — 1 leitura por produto</label>
                 <div class="input-group">
                     <input class="form-control bipador form-control-lg" type="text" id="campo_bip" name="codigo"
                            placeholder="Ex.: 7891000010011" autofocus required>

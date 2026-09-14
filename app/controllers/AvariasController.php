@@ -50,11 +50,11 @@ final class AvariasController
             Router::redirecionar('avarias');
         }
 
-        $produto  = ProdutoModel::buscarPorCodigoBarras($codigoProduto);
+        $produto  = ProdutoModel::buscarPorSku($codigoProduto);
         $endereco = EnderecoModel::buscarPorCodigo($codigoEndereco);
 
         if ($produto === null || $endereco === null) {
-            ViewHelper::setFlash('erro', 'Produto ou endereço não localizados no cadastro.');
+            ViewHelper::setFlash('erro', 'Produto (bipa apenas o SKU, ex.: SIS-001) ou endereço não localizados no cadastro.');
             Router::redirecionar('avarias');
         }
         if ($quantidade <= 0) {

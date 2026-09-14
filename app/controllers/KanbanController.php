@@ -34,7 +34,7 @@ final class KanbanController
 
         ViewHelper::render('kanban/index', [
             'titulo'    => 'Quadro Operacional (Kanban)',
-            'subtitulo' => 'Recebimento → Guarda → Armazenado → Picking → Packing → Expedição → Entrega · borda amarela aos 80% do SLA, vermelha ao estourar.',
+            'subtitulo' => 'Recebimento → Guarda → Armazenado → Picking → Packing → Expedição → Entrega · na coluna Armazenado, abra o pedido de venda para liberar ao Picking · borda amarela aos 80% do SLA, vermelha ao estourar.',
             'colunas'   => $colunas,
             'limites'   => $limites,
         ]);

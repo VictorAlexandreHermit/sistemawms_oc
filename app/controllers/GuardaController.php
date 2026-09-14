@@ -27,7 +27,7 @@ final class GuardaController
         foreach (array_slice($armazenadas, 0, 6) as $carga) {
             $itens = [];
             foreach (PedidoModel::itens((int) $carga['id']) as $item) {
-                $item['localizacoes'] = EstoqueModel::consultarPorProduto($item['codigo_barras']);
+                $item['localizacoes'] = EstoqueModel::consultarPorProduto($item['sku']);
                 $itens[] = $item;
             }
             $armazenadasDetalhe[] = [
@@ -88,9 +88,9 @@ final class GuardaController
             Router::redirecionar('guarda/executar/' . $pedidoId);
         }
 
-        $produto = ProdutoModel::buscarPorCodigoBarras($produtoCodigo);
+        $produto = ProdutoModel::buscarPorSku($produtoCodigo);
         if ($produto === null) {
-            ViewHelper::setFlash('erro', 'Produto não localizado pelo código informado.');
+            ViewHelper::setFlash('erro', 'Nenhum produto com este SKU. Bipe/digite apenas o SKU (ex.: SIS-001).');
             Router::redirecionar('guarda/executar/' . $pedidoId);
         }
 

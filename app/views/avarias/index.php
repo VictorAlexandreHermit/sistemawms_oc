@@ -13,8 +13,8 @@
                 <?php echo CsrfHelper::campo(); ?>
 
                 <div class="mb-3">
-                    <label class="form-label">Produto (código de barras ou SKU)</label>
-                    <input class="form-control bipador" type="text" name="produto" required autofocus>
+                    <label class="form-label">Produto (apenas o SKU, ex.: SIS-001)</label>
+                    <input class="form-control bipador" type="text" name="produto" placeholder="SKU (ex.: SIS-001)" required autofocus>
                 </div>
 
                 <?php

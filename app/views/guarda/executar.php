@@ -17,9 +17,9 @@
                 <?php echo CsrfHelper::campo(); ?>
 
                 <div class="mb-3">
-                    <label class="form-label" for="produto">1. Bipe o código do produto</label>
+                    <label class="form-label" for="produto">1. Bipe o SKU do produto</label>
                     <input class="form-control bipador" type="text" id="produto" name="produto"
-                           placeholder="Código de barras do produto" data-proximo="endereco" autofocus required>
+                           placeholder="SKU do produto (ex.: SIS-001)" data-proximo="endereco" autofocus required>
                 </div>
 
                 <?php
@@ -33,8 +33,9 @@
             </form>
 
             <p class="text-secondary mt-3 mb-0" style="color:#64748B;font-size:13px">
-                Dica: se o leitor USB bipar o produto, ele envia <em>Enter</em> automaticamente e o foco
-                vai para o corredor. Selecione corredor, galpão e prateleira onde está armazenando
+                Dica: aqui o sistema pesquisa APENAS pelo SKU (ex.: SIS-001). Se o leitor USB bipar o produto,
+                ele envia <em>Enter</em> automaticamente e o foco vai para o corredor. Selecione corredor,
+                galpão e prateleira onde está armazenando
                 (a sugestão do sistema já vem pré-selecionada em ordem crescente).
             </p>
         </div>

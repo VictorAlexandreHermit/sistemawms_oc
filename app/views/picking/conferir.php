@@ -24,9 +24,9 @@ $pct = (float) $progresso['percentual'];
 
             <form method="post" action="<?php echo BASE_URL; ?>/picking/bipar/<?php echo (int) $pedido['id']; ?>" autocomplete="off">
                 <?php echo CsrfHelper::campo(); ?>
-                <label class="form-label">Leia o código do item coletado (1x por produto)</label>
+                <label class="form-label">Leia o SKU coletado (ex.: SIS-002) — <strong>apenas SKU</strong>, nunca o código de barras — 1x por produto</label>
                 <input class="form-control bipador" type="text" name="codigo"
-                       placeholder="Código de barras" autofocus required>
+                       placeholder="SKU (ex.: SIS-002)" autofocus required>
                 <button type="submit" class="wms-btn-primary w-100 mt-3">Registrar Bipagem</button>
             </form>
 
@@ -91,7 +91,7 @@ $pct = (float) $progresso['percentual'];
                                     <form method="post" action="<?php echo BASE_URL; ?>/picking/desfazer/<?php echo (int) $pedido['id']; ?>" class="d-inline"
                                           onsubmit="return confirm('Desfazer a separação deste produto?')">
                                         <?php echo CsrfHelper::campo(); ?>
-                                        <input type="hidden" name="codigo" value="<?php echo SecurityHelper::e($item['codigo_barras']); ?>">
+                                        <input type="hidden" name="codigo" value="<?php echo SecurityHelper::e($item['sku']); ?>">
                                         <button class="btn btn-sm btn-outline-slate" title="Desfazer a bipagem deste produto">Desfazer</button>
                                     </form>
                                     <?php endif; ?>

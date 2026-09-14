@@ -38,7 +38,7 @@ final class PickingController
 
         $itens = PedidoModel::itens($pedidoId);
         foreach ($itens as &$item) {
-            $item['localizacoes'] = EstoqueModel::consultarPorProduto($item['codigo_barras']);
+            $item['localizacoes'] = EstoqueModel::consultarPorProduto($item['sku']);
         }
         unset($item);
 
@@ -78,9 +78,9 @@ final class PickingController
             Router::redirecionar('picking/conferir/' . $pedidoId);
         }
 
-        $produto = ProdutoModel::buscarPorCodigoBarras($codigo);
+        $produto = ProdutoModel::buscarPorSku($codigo);
         if ($produto === null) {
-            ViewHelper::setFlash('erro', 'Produto não encontrado.');
+            ViewHelper::setFlash('erro', 'Nenhum produto com este SKU. Digite apenas o SKU (ex.: SIS-002).');
             Router::redirecionar('picking/conferir/' . $pedidoId);
         }
 

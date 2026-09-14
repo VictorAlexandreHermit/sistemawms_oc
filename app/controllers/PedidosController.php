@@ -2,7 +2,8 @@
 /**
  * app/controllers/PedidosController.php
  * Simulação de Pedidos de Venda: cria pedidos a partir do estoque armazenado
- * e é a ÚNICA porta de entrada para o fluxo de Picking.
+ * (açãoAbirCarga transforma a própria carga do Kanban em venda).
+ * É a porta de entrada para o fluxo de Picking.
  */
 
 defined('WMS_EXEC') or die('Acesso direto não permitido.');
@@ -73,6 +74,27 @@ final class PedidosController
             ViewHelper::setFlash('erro', $e->getMessage());
             Router::redirecionar('pedidos');
         }
+    }
+
+    /**
+     * Libera uma carga ARMAZENADO direto do Kanban: transforma o mesmo
+     * processo em pedido de venda e o leva ao Picking (card segue o fluxo).
+     */
+    public function actionAbrirCarga(int $pedidoId): void
+    {
+        AuthHelper::requireLogin();
+        CsrfHelper::checarRequisicao();
+
+        $destinatario = trim($_POST['destinatario'] ?? '');
+        $contato      = trim($_POST['contato'] ?? '');
+
+        try {
+            $pedido = PedidoModel::abrirVendaDaCarga($pedidoId, $destinatario, $contato);
+            ViewHelper::setFlash('sucesso', 'Carga ' . SecurityHelper::e($pedido['numero_nota_xml']) . ' liberada ao Picking para ' . SecurityHelper::e($pedido['cliente_nome']) . '.');
+        } catch (RuntimeException $e) {
+            ViewHelper::setFlash('erro', $e->getMessage());
+        }
+        Router::redirecionar('kanban');
     }
 
     /**

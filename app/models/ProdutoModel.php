@@ -83,17 +83,36 @@ final class ProdutoModel
         return $stmt->fetch() !== false;
     }
 
+    public static function buscarPorSku(string $sku): ?array
+    {
+        $pdo = Database::conexao();
+        $stmt = $pdo->prepare('SELECT * FROM produtos
+                               WHERE sku = :sku AND deleted_at IS NULL
+                               LIMIT 1');
+        $stmt->execute([':sku' => $sku]);
+        $reg = $stmt->fetch();
+        return $reg ?: null;
+    }
+
     /**
      * Localiza ou cria um produto a partir de um código de barras digitado
-     * na Entrada Manual do Recebimento. Se o código não existir no catálogo,
-     * o produto é cadastrado automaticamente com um SKU interno único
-     * ("código de barras interno" gerado pelo sistema), evitando duplicidade
-     * entre fornecedores. O catálogo é atualizado no ato do recebimento.
-     * A Curva ABC escolhida (A/B/C) define a prioridade de movimentação.
+     * na Entrada Manual do Recebimento.
      *
+     * O SKU interno (ex.: "SIS-001") é o "código de barras interno à prova de
+     * erro": mesmo que o MESMO código de barras do fornecedor seja recebido
+     * em dias diferentes, o operador informa um SKU novo (sugerido
+     * automaticamente) e o sistema cria outro produto — a movimentação
+     * (guarda/endereçamento, separação, expedição) passa a ser SEMPRE por SKU.
+     *
+     * @param string      $codigo    Código de barras (pode ser repetido entre produtos).
+     * @param string      $descricao Descrição informada (opcional).
+     * @param string      $curva     Curva ABC (A/B/C, padrão C).
+     * @param string|null $sku       SKU interno opcional. Se informado e ainda não
+     *                               cadastrado, um novo produto é criado mesmo com
+     *                               código de barras repetido.
      * @return array Produto existente ou recém-criado.
      */
-    public static function obterOuCriarManual(string $codigo, string $descricao = '', string $curva = 'C'): array
+    public static function obterOuCriarManual(string $codigo, string $descricao = '', string $curva = 'C', ?string $sku = null): array
     {
         $codigo = trim($codigo);
         if ($codigo === '') {
@@ -102,6 +121,26 @@ final class ProdutoModel
         $curva = strtoupper(trim($curva));
         if (!in_array($curva, ['A', 'B', 'C'], true)) {
             $curva = 'C';
+        }
+        $sku = strtoupper(trim((string) $sku));
+
+        if ($sku !== '') {
+            $porSku = self::buscarPorSku($sku);
+            if ($porSku !== null) {
+                if ($curva !== strtoupper((string) $porSku['curva_abc'])) {
+                    $pdo = Database::conexao();
+                    $up = $pdo->prepare('UPDATE produtos SET curva_abc = :curva, updated_by = :usuario WHERE id = :id');
+                    $up->execute([
+                        ':curva'   => $curva,
+                        ':usuario' => AuthHelper::usuario('id'),
+                        ':id'      => (int) $porSku['id'],
+                    ]);
+                    $porSku['curva_abc'] = $curva;
+                }
+                return $porSku;
+            }
+            $produto = self::criarManual($sku, $codigo, $descricao, $curva);
+            return $produto !== null ? $produto : throw new RuntimeException('Não foi possível cadastrar o SKU "' . $sku . '" no catálogo.');
         }
 
         $existente = self::buscarPorCodigoBarras($codigo);
@@ -119,6 +158,15 @@ final class ProdutoModel
             return $existente;
         }
 
+        $produto = self::criarManual(self::gerarSkuInterno(), $codigo, $descricao, $curva);
+        if ($produto === null) {
+            throw new RuntimeException('Não foi possível cadastrar o produto do código "' . $codigo . '" no catálogo.');
+        }
+        return $produto;
+    }
+
+    private static function criarManual(string $sku, string $codigo, string $descricao, string $curva): ?array
+    {
         $descricaoExtra = trim($descricao) !== '' ? $descricao : 'Produto recebido por código de barras ' . $codigo;
 
         $pdo = Database::conexao();
@@ -128,7 +176,7 @@ final class ProdutoModel
                     VALUES (:sku, :codigo, :descricao, :unidade, :curva, :criadoPor)';
             $stmt = $pdo->prepare($sql);
             $stmt->execute([
-                ':sku'        => self::gerarSkuInterno(),
+                ':sku'        => $sku,
                 ':codigo'     => mb_substr($codigo, 0, 100),
                 ':descricao' => mb_substr($descricaoExtra, 0, 255),
                 ':unidade'    => 'UN',
@@ -140,28 +188,28 @@ final class ProdutoModel
         } catch (\Throwable $e) {
             $pdo->rollBack();
             LogHelper::registrarErro($e);
-            throw new RuntimeException('Não foi possível cadastrar o produto do código "' . $codigo . '" no catálogo.');
+            return null;
         }
 
         return self::buscarPorId($id);
     }
 
     /**
-     * Gera um SKU interno sequencial no formato "WM-000001" (código de barras
-     * interno do sistema), sempre único.
+     * Gera um SKU interno sequencial no formato "SIS-001" (código de barras
+     * interno do sistema, curto e fácil de digitar/bipar), sempre único.
      */
-    private static function gerarSkuInterno(): string
+    public static function gerarSkuInterno(): string
     {
         $pdo = Database::conexao();
-        $stmt = $pdo->query('SELECT MAX(CAST(SUBSTRING(sku, 7) AS UNSIGNED)) AS ultimo
-                             FROM produtos WHERE sku LIKE "WM-%"');
+        $stmt = $pdo->query('SELECT MAX(CAST(SUBSTRING(sku, 5) AS UNSIGNED)) AS ultimo
+                             FROM produtos WHERE sku LIKE "SIS-%"');
         $linha = $stmt->fetch();
         $numero = (int) ($linha['ultimo'] ?? 0) + 1;
 
-        $sku = 'WM-' . str_pad((string) $numero, 6, '0', STR_PAD_LEFT);
+        $sku = 'SIS-' . str_pad((string) $numero, 3, '0', STR_PAD_LEFT);
         while (self::skuExiste($sku)) {
             $numero++;
-            $sku = 'WM-' . str_pad((string) $numero, 6, '0', STR_PAD_LEFT);
+            $sku = 'SIS-' . str_pad((string) $numero, 3, '0', STR_PAD_LEFT);
         }
         return $sku;
     }
@@ -174,7 +222,8 @@ final class ProdutoModel
             $sql .= ' AND deleted_at IS NULL';
         }
         if ($termo !== null && trim($termo) !== '') {
-            $sql .= ' AND (sku LIKE :t OR codigo_barras LIKE :t OR descricao LIKE :t)';
+            // Pesquisa apenas por SKU ou descrição: o código de barras pode se repetir.
+            $sql .= ' AND (sku LIKE :t OR descricao LIKE :t)';
         }
         $sql .= ' ORDER BY created_at DESC, id DESC';
         $stmt = $pdo->prepare($sql);

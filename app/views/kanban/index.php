@@ -38,10 +38,11 @@ $rotulos = [
                 <?php foreach ($cards as $c): ?>
                 <?php
                 $classeSla = $c['sla']['classe'];
-                $linkCard = $etapa === 'ARMAZENADO' ? $urlDoCard[$etapa] : BASE_URL . '/' . $urlDoCard[$etapa] . (int) $c['id'];
+                $acumulaRepouso = in_array($etapa, ['ARMAZENADO', 'EM_TRANSITO'], true);
+                $linkCard = $etapa === 'ARMAZENADO' ? null : BASE_URL . '/' . $urlDoCard[$etapa] . (int) $c['id'];
                 ?>
-                <div class="kanban-card <?php echo SecurityHelper::e($classeSla); ?> <?php echo in_array($etapa, ['ARMAZENADO', 'EM_TRANSITO'], true) ? 'kanban-card-repouso' : ''; ?>"
-                     data-url="<?php echo SecurityHelper::e($linkCard); ?>">
+                <div class="kanban-card <?php echo SecurityHelper::e($classeSla); ?> <?php echo $acumulaRepouso ? 'kanban-card-repouso' : ''; ?>"
+                     <?php echo $linkCard !== null ? 'data-url="' . SecurityHelper::e($linkCard) . '"' : ''; ?>>
                     <div class="card-top">
                         <span class="card-number"><?php echo $etapa === 'ARMAZENADO' ? 'Carga ' : 'Nota '; ?><?php echo SecurityHelper::e($c['numero_nota_xml']); ?></span>
                         <span class="d-flex align-items-center gap-2">
@@ -68,6 +69,13 @@ $rotulos = [
                         </span>
                         <?php endif; ?>
                     </div>
+                    <?php if ($etapa === 'ARMAZENADO'): ?>
+                    <form method="post" action="<?php echo BASE_URL; ?>/pedidos/abrir-carga/<?php echo (int) $c['id']; ?>" class="kanban-abrir">
+                        <?php echo CsrfHelper::campo(); ?>
+                        <input type="text" name="destinatario" class="form-control form-control-sm" placeholder="Destinatário (cliente)" maxlength="100" required>
+                        <button type="submit" class="btn btn-sm btn-primary mt-1 w-100">Abrir pedido → Picking</button>
+                    </form>
+                    <?php endif; ?>
                     <?php if ($etapa !== 'ARMAZENADO' && $etapa !== 'EM_TRANSITO'): ?>
                     <div class="cronometro mt-1 text-secondary" data-inicio-ts="<?php
                         $ts = strtotime($c['ts_' . strtolower($etapa)] ?? date('Y-m-d H:i:s'));

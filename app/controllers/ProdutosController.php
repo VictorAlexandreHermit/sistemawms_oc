@@ -17,7 +17,7 @@ final class ProdutosController
         $produtos = ProdutoModel::listar($termo !== '' ? $termo : null);
         foreach ($produtos as &$p) {
             $p['saldo_total'] = EstoqueModel::saldoTotalDisponivel((int) $p['id']);
-            $p['localizacoes'] = EstoqueModel::consultarPorProduto($p['codigo_barras']);
+            $p['localizacoes'] = EstoqueModel::consultarPorProduto($p['sku']);
         }
         unset($p);
 

@@ -19,6 +19,7 @@ final class RecebimentoController
             'titulo'    => 'Recebimento de Mercadorias',
             'subtitulo' => 'Importe o XML da NF-e e execute a conferência cega: bipe 1x por produto (embalagem etiquetada).',
             'pendentes' => $pendentes,
+            'proximoSku' => ProdutoModel::gerarSkuInterno(),
         ]);
     }
 
@@ -61,6 +62,7 @@ final class RecebimentoController
         $quantidades = $_POST['quantidade'] ?? [];
         $descricoes = $_POST['descricao'] ?? [];
         $curvas     = $_POST['curva_abc'] ?? [];
+        $skus       = $_POST['sku'] ?? [];
 
         if (!is_array($codigos) || empty($codigos)) {
             ViewHelper::setFlash('erro', 'Informe ao menos um item (código de barras) para a entrada manual.');
@@ -76,6 +78,7 @@ final class RecebimentoController
             $qtd    = (int) ($quantidades[$i] ?? 0);
             $desc   = trim((string) ($descricoes[$i] ?? ''));
             $curva  = strtoupper(trim((string) ($curvas[$i] ?? '')));
+            $sku    = mb_strtoupper(trim((string) ($skus[$i] ?? '')));
             if (!in_array($curva, ['A', 'B', 'C'], true)) {
                 $curva = 'C';
             }
@@ -87,7 +90,7 @@ final class RecebimentoController
                 continue;
             }
             try {
-                $produto = ProdutoModel::obterOuCriarManual($codigo, $desc, $curva);
+                $produto = ProdutoModel::obterOuCriarManual($codigo, $desc, $curva, $sku !== '' ? $sku : null);
             } catch (RuntimeException $e) {
                 $erros[] = $e->getMessage();
                 continue;

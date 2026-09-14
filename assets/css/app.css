@@ -344,6 +344,14 @@ a { color: var(--wms-deep-slate); }
     border-color: #C6E0CB;
     cursor: default;
 }
+.kanban-abrir .form-control {
+    font-size: 12px;
+    padding: .35rem .6rem;
+}
+.kanban-abrir .btn {
+    font-size: 12px;
+    padding: .3rem .6rem;
+}
 .kanban-col-header {
     padding: .8rem 1rem;
     font-weight: 600;

@@ -502,9 +502,11 @@ final class PedidoModel
      */
     public static function biparPicking(int $pedidoId, string $codigo): array
     {
-        $produto = ProdutoModel::buscarPorCodigoBarras($codigo);
+        // Após o recebimento gerar o SKU, o processo inteiro pesquisa APENAS
+        // pelo SKU (o código de barras fornecedor pode se repetir).
+        $produto = ProdutoModel::buscarPorSku($codigo);
         if ($produto === null) {
-            return ['ok' => false, 'mensagem' => 'Código não cadastrado no catálogo.', 'item' => null, 'completo' => false];
+            return ['ok' => false, 'mensagem' => 'Nenhum produto com este SKU. Digite apenas o SKU (ex.: SIS-002).', 'item' => null, 'completo' => false];
         }
 
         $pdo = Database::conexao();
@@ -677,6 +679,58 @@ final class PedidoModel
             LogHelper::registrarErro($e);
             throw new RuntimeException('Não foi possível abrir o pedido de venda.');
         }
+    }
+
+    /**
+     * Transforma uma carga ARMAZENADO no pedido de venda que a faz avançar
+     * ao Picking (Mesmo pedido/id: o card do kanban segue o fluxo completo).
+     * Só vale para cargas em repouso físico (ARMAZENADO) e com saldo
+     * DISPONIVEL suficiente para os itens.
+     *
+     * @return array Pedido já convertido
+     */
+    public static function abrirVendaDaCarga(int $pedidoId, string $destinatario, string $contato = ''): array
+    {
+        $destinatario = trim($destinatario);
+        if ($destinatario === '') {
+            throw new RuntimeException('Informe o destinatário/cliente da venda.');
+        }
+
+        $pdo = Database::conexao();
+        $pedido = self::buscarPorId($pedidoId);
+        if ($pedido === null) {
+            throw new RuntimeException('Processo não encontrado no fluxo.');
+        }
+        if ($pedido['status_kanban'] !== 'ARMAZENADO') {
+            throw new RuntimeException('Só é possível liberar ao Picking uma carga que está em Armazenado.');
+        }
+
+        foreach (self::itens($pedidoId) as $item) {
+            $saldo = EstoqueModel::saldoTotalDisponivel((int) $item['produto_id']);
+            if ($saldo < (int) $item['quantidade_esperada']) {
+                $nome = $item['sku'] . ' - ' . $item['descricao'];
+                throw new RuntimeException(
+                    'Estoque já comprometido para ' . SecurityHelper::e(mb_strimwidth($nome, 0, 60, '…')) .
+                    ' (solicitado ' . (int) $item['quantidade_esperada'] . ', disponível ' . $saldo . ').'
+                );
+            }
+        }
+
+        $stmt = $pdo->prepare('UPDATE pedidos
+                               SET tipo = "VENDA",
+                                   status_kanban = "A_SEPARAR",
+                                   cliente_nome = :dest,
+                                   cliente_contato = :cont,
+                                   ts_a_separar = COALESCE(ts_a_separar, NOW())
+                               WHERE id = :id');
+        $stmt->execute([
+            ':dest' => mb_substr($destinatario, 0, 100),
+            ':cont' => mb_substr(trim($contato), 0, 100),
+            ':id'   => $pedidoId,
+        ]);
+
+        self::definirPrioridadeAbc($pedidoId);
+        return self::buscarPorId($pedidoId);
     }
 
     /**

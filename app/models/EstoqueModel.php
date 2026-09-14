@@ -185,10 +185,11 @@ final class EstoqueModel
 
     /**
      * Consulta rápida de localização: um endereço pode conter vários produtos/saldos.
+     * Pesquisa APENAS pelo SKU interno (o código de barras fornecedor pode se repetir).
      */
-    public static function consultarPorProduto(string $codigoOuSku): array
+    public static function consultarPorProduto(string $sku): array
     {
-        $produto = ProdutoModel::buscarPorCodigoBarras($codigoOuSku);
+        $produto = ProdutoModel::buscarPorSku($sku);
         if ($produto === null) {
             return [];
         }
